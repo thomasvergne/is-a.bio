@@ -13,7 +13,7 @@ export default function BuilderNew() {
   const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
   const navigate = useNavigate();
 
-  const [_, setSettings] = useLocalStorage<Settings>("settings", { title: 'Untitled portfolio', size: 'small', description: '' });
+  const [settings, setSettings] = useLocalStorage<Settings>("settings", { title: 'Untitled portfolio', size: 'small', description: '' });
 
   return (
     <main className="min-h-screen bg-slate-100 grid place-items-center">
@@ -36,7 +36,7 @@ export default function BuilderNew() {
                   The portfolio name
                 </Label>
 
-                <Input ref={nameInputRef} type="text" placeholder="Enter the name of your portfolio" className="mt-2" />
+                <Input defaultValue={settings.title} ref={nameInputRef} type="text" placeholder="Enter the name of your portfolio" className="mt-2" />
               </div>
 
               <div>
@@ -44,7 +44,7 @@ export default function BuilderNew() {
                   The portfolio description
                 </Label>
 
-                <Textarea ref={descriptionInputRef} placeholder="Enter the description of your portfolio" className="mt-2" rows={3} />
+                <Textarea defaultValue={settings.description} ref={descriptionInputRef} placeholder="Enter the description of your portfolio" className="mt-2" rows={3} />
               </div>
             </form>
           </CardContent>
