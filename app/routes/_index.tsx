@@ -36,13 +36,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export default function Index() {
   const { data } = useLoaderData<typeof loader>();
 
-  if (!data) {
+  if (!data || !data.content) {
     return (
       <div>
         <h1>No website found.</h1>
       </div>
     );
   }
+  
   const { settings, blocks } = data.content;
   return <div className={cn("mx-auto w-full py-32 px-4", breakpoints[settings.size])}>
     {blocks.map((block, index) => <PreviewBlock key={index} block={block} />)}

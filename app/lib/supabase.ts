@@ -38,5 +38,5 @@ export interface WebsiteData {
   created_at: string;
   updated_at: string;
   subdomain: string;
-  content: Website;
+  content?: Website;
 }
