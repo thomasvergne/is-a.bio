@@ -7,12 +7,71 @@ import { Button } from "~/components/ui/button";
 import { createSupabaseServerClient, WebsiteData } from "~/lib/supabase";
 import { cn } from "~/lib/utils";
 
-export const meta: MetaFunction = () => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const { supabaseClient, headers } = createSupabaseServerClient(request);
+
+  const url = new URL(request.url);
+  const subdomains = url.hostname.split(".");
+
+  if (subdomains.length < 3) {
+    return { status: 200, message: 'No website found.', data: null };
+  }
+
+  const subdomain = subdomains[0];
+
+  const { data: website, error } = await supabaseClient.from('websites').select('*').eq('subdomain', subdomain).single();
+
+  if (error) {
+    return { status: 200, message: 'No website found.', data: null };
+  }
+
+  return {
+    status: 200,
+    message: `Website found: ${website?.name}`,
+    data: website as WebsiteData,
+    headers,
+  };
+}
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  if (!data || !data.data?.content) {
+    const description = "is-a.bio is the best app to create your portfolio. Start building your portfolio today with is-a.bio.";
+
+    return [
+      { title: 'is-a.bio' },
+      {
+        property: "og:title",
+        content: "is-a.bio",
+      },
+      {
+        name: "description",
+        content: description,
+      },
+      {
+        property: "og:description",
+        content: description,
+      },
+    ]
+  }
+
+  const { settings } = data.data.content;
+
   return [
-    { title: "New Remix App" },
-    { name: "description", content: "Welcome to Remix!" },
-  ];
-};
+    { title: settings.title },
+    {
+      property: "og:title",
+      content: settings.title,
+    },
+    {
+      name: "description",
+      content: settings.description,
+    },
+    {
+      property: "og:description",
+      content: settings.description,
+    },
+  ]
+}
 
 function MainPage() {
   return <main className="bg-slate-100 min-h-screen">
@@ -47,32 +106,6 @@ function MainPage() {
     </div>
 
   </main>
-}
-
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const { supabaseClient, headers } = createSupabaseServerClient(request);
-
-  const url = new URL(request.url);
-  const subdomains = url.hostname.split(".");
-
-  if (subdomains.length < 3) {
-    return { status: 200, message: 'No website found.', data: null };
-  }
-
-  const subdomain = subdomains[0];
-
-  const { data: website, error } = await supabaseClient.from('websites').select('*').eq('subdomain', subdomain).single();
-
-  if (error) {
-    return { status: 200, message: 'No website found.', data: null };
-  }
-
-  return {
-    status: 200,
-    message: `Website found: ${website?.name}`,
-    data: website as WebsiteData,
-    headers,
-  };
 }
 
 export default function Index() {
