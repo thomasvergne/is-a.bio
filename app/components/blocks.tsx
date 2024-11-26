@@ -27,37 +27,66 @@ export const gridSizes: Record<number, string> = {
   3: 'md:grid-cols-2 lg:grid-cols-3',
 }
 
-export type Block = { 
+interface BlockText {
   type: "text";
   size: 'small' | 'medium' | 'large';
   content: string;
   id: string;
-} | {
+}
+
+interface BlockImage {
   type: "image";
   url: string;
   alt: string;
   id: string;
-} | {
+}
+
+interface BlockGrid {
   type: "grid";
   size: number;
   children: Block[];
   id: string;
 }
 
+interface BlockButton {
+  type: "button";
+  text: string;
+  align: 'left' | 'center' | 'right';
+  url: string;
+  id: string;
+}
+
+export const columnSpan: Record<number, string> = {
+  1: 'col-span-1',
+  2: 'col-span-2',
+  3: 'col-span-3',
+};
+
+export const alignment: Record<'left' | 'center' | 'right', string> = {
+  left: 'justify-start',
+  center: 'justify-center',
+  right: 'justify-end',
+};
+
+export type Block = (BlockText | BlockImage | BlockGrid | BlockButton) & { columnSpan?: number; };
+
 interface RenderBlockProps {
   block: Block;
   index: number;
-  blocks: Block[];
-  setBlocks: Dispatch<SetStateAction<Block[]>>;
+  isGrid?: boolean;
+  parent?: Block;
 }
 
-export function RenderBlock({ index }: RenderBlockProps) {
+export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps) {
   const { blocks, setBlocks } = useContext(BlockContext);
   const renderedBlock = blocks[index];
 
   const imageUrlRef = useRef<HTMLInputElement>(null);
   const imageAltRef = useRef<HTMLInputElement>(null);
   const gridSizeRef = useRef<HTMLInputElement>(null);
+  const buttonUrlRef = useRef<HTMLInputElement>(null);
+  const buttonTextRef = useRef<HTMLInputElement>(null);
+  const spanRef = useRef<HTMLInputElement>(null);
 
   function updateBlock(block: Block, index: number) {
     setBlocks(blocks.map((b, i) => i === index ? block : b));
@@ -65,7 +94,7 @@ export function RenderBlock({ index }: RenderBlockProps) {
 
   switch (renderedBlock.type) {
     case "image": {
-      const { url, alt } = renderedBlock;
+      const { url, alt, columnSpan: colS } = renderedBlock;
       return <>
         <ContextMenu>
           <ContextMenuTrigger asChild>
@@ -73,7 +102,7 @@ export function RenderBlock({ index }: RenderBlockProps) {
               key={index}
               src={url}
               alt={alt}
-              className="w-full h-96 object-cover my-8"
+              className={cn("w-full h-96 object-cover my-8", colS && columnSpan[colS])}
             />
           </ContextMenuTrigger>
 
@@ -92,11 +121,22 @@ export function RenderBlock({ index }: RenderBlockProps) {
 
                 <Input ref={imageUrlRef} placeholder="Enter image URL" type="text" defaultValue={url} />
 
-                <Label className="mt-4 block">
+                <Label className="mt-4 block mb-2">
                   Image alt text
                 </Label>
 
                 <Input ref={imageAltRef} placeholder="Enter image alt text" type="text" defaultValue={alt} />
+
+                { 
+                  isGrid 
+                    && <>
+                        <Label className="my-2 block">
+                          Column span (length that the button should span)
+                        </Label>
+
+                        <Input ref={spanRef}  placeholder="Enter column span" type="number" defaultValue={colS} max={parent?.type === 'grid' ? parent.size : 1} min={1} />
+                      </>
+                }
               </CardContent>
 
               <CardFooter className="flex justify-between p-2">
@@ -129,87 +169,139 @@ export function RenderBlock({ index }: RenderBlockProps) {
     }
 
     case "text": {
-      const { size, content, id } = renderedBlock;
+      const { size, content, id, columnSpan: colS } = renderedBlock;
+
+      return <TextEditor 
+        value={content} 
+        onValueChange={(val) => {
+          updateBlock({
+            type: 'text',
+            size,
+            content: val,
+            id,
+          }, index);
+        }} 
+        size={size}
+        setSize={(size) => {
+          updateBlock({
+            type: 'text',
+            content,
+            size,
+            id,
+          }, index)
+        }}
+        deleteText={() => {
+          setBlocks(blocks.filter((_, i) => i !== index));
+        }}
+        className={cn({
+          'text-base': size === 'small',
+          'text-xl font-semibold': size === 'medium',
+          'text-3xl font-bold': size === 'large',
+        }, colS && columnSpan[colS])} 
+      />
+    }
+
+    case 'button': {
+      const { text, url, align, id, columnSpan: colS } = renderedBlock;
 
       return <>
         <ContextMenu>
           <ContextMenuTrigger asChild>
-            <TextEditor 
-              value={content} 
-              onValueChange={(val) => {
-                updateBlock({
-                  type: 'text',
-                  size,
-                  content: val,
-                  id,
-                }, index);
-              }} 
-              size={size}
-              setSize={(size) => {
-                updateBlock({
-                  type: 'text',
-                  content,
-                  size,
-                  id,
-                }, index)
-              }}
-              deleteText={() => {
-                setBlocks(blocks.filter((_, i) => i !== index));
-              }}
-              className={cn({
-                'text-base': size === 'small',
-                'text-xl font-semibold': size === 'medium',
-                'text-3xl font-bold': size === 'large'
-              })} 
-            />
+            <div className={cn("flex w-full", alignment[align], colS && columnSpan[colS])}>
+              <Button>
+                {text}
+              </Button>
+            </div>
           </ContextMenuTrigger>
 
           <ContextMenuContent asChild>
             <Card className="w-80">
               <CardHeader className="p-2">
                 <CardTitle>
-                  Edit text block
+                  Edit button block
                 </CardTitle>
               </CardHeader>
 
               <CardContent className="p-2">
                 <Label className="mb-2 block">
-                  Text size
+                  Button text
                 </Label>
 
-                <Select defaultValue={size} onValueChange={(val) => {
+                <Input ref={buttonTextRef} placeholder="Enter button text" type="text" defaultValue={text} />
+
+                <Label className="my-2 block">
+                  Button URL
+                </Label>
+
+                <Input ref={buttonUrlRef} placeholder="Enter button URL" type="text" defaultValue={url} />
+
+                <Label className="my-2 block">
+                  Button alignment
+                </Label>
+
+                <Select defaultValue={align} onValueChange={(val) => {
                   updateBlock({
-                    type: 'text',
-                    content,
-                    size: val as 'small' | 'medium' | 'large',
+                    type: 'button',
+                    text,
+                    url,
+                    align: val as 'left' | 'center' | 'right',
                     id,
                   }, index);
                 }}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Set text size" />
+                    <SelectValue placeholder="Select button alignment" />
                   </SelectTrigger>
-                  
+
                   <SelectContent>
-                    <SelectItem value="small">
-                      Small
+                    <SelectItem value="left">
+                      Left
                     </SelectItem>
 
-                    <SelectItem value="medium">
-                      Medium
+                    <SelectItem value="center">
+                      Center
                     </SelectItem>
 
-                    <SelectItem value="large">
-                      Large
+                    <SelectItem value="right">
+                      Right
                     </SelectItem>
                   </SelectContent>
                 </Select>
+
+                { 
+                  isGrid 
+                    && <>
+                        <Label className="my-2 block">
+                          Column span (length that the button should span)
+                        </Label>
+
+                        <Input ref={spanRef}  placeholder="Enter column span" type="number" defaultValue={colS} max={parent?.type === 'grid' ? parent.size : 1} min={1} />
+                      </>
+                }
               </CardContent>
 
-              <CardFooter className="p-2">
+              <CardFooter className="flex justify-between p-2">
                 <Button variant="destructive" onClick={() => {
                   setBlocks(blocks.filter((_, i) => i !== index));
                 }}>
                   Delete block
+                </Button>
+
+                <Button onClick={() => {
+                  if (!buttonTextRef.current || !buttonUrlRef.current) return;
+
+                  const text = buttonTextRef.current.value;
+                  const url = buttonUrlRef.current.value;
+
+                  updateBlock({
+                    type: 'button',
+                    text,
+                    url,
+                    align,
+                    id,
+                    columnSpan: spanRef.current ? parseInt(spanRef.current.value, 10) : 1,
+                  }, index);
+                }}>
+                  Update button 
                 </Button>
               </CardFooter>
             </Card>
@@ -236,14 +328,7 @@ export function RenderBlock({ index }: RenderBlockProps) {
                 {
                   children.length > 0 
                     ? children.map((child, i) => {
-                        return <RenderBlock key={i} block={child} index={i} blocks={children} setBlocks={(children) => {
-                          return updateBlock({
-                            type: 'grid',
-                            size,
-                            children: children as Block[],
-                            id,
-                          }, index)
-                        }} />
+                        return <RenderBlock key={i} block={child} index={i} isGrid parent={renderedBlock} />
                       })
                     : null
                       

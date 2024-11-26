@@ -31,7 +31,7 @@ function SortableItem({ block, index, id }: { block: Block, index: number, id: s
   };
 
   return <div ref={setNodeRef} style={style} className="flex flex-row my-2">
-    <RenderBlock block={block} index={index} blocks={[]} setBlocks={() => { }} />
+    <RenderBlock block={block} index={index} />
 
     <GripVertical className="h-6 w-6 ml-2" {...attributes} {...listeners} />
   </div>

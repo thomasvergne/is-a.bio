@@ -4,8 +4,9 @@ import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Block, BlockContext, insertAt } from "./blocks";
-import { Dispatch, SetStateAction, useContext, useRef } from "react";
+import { Dispatch, SetStateAction, useContext, useRef, useState } from "react";
 import { ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger } from "./ui/context-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 interface ArtefactCreatorProps {
   blocks: Block[];
@@ -35,6 +36,9 @@ export function Menu({ position }: ArtefactCreatorProps) {
   const imageUrlRef = useRef<HTMLInputElement>(null);
   const imageAltRef = useRef<HTMLInputElement>(null);
   const gridSizeRef = useRef<HTMLInputElement>(null);
+  const buttonUrlRef = useRef<HTMLInputElement>(null);
+  const buttonTextRef = useRef<HTMLInputElement>(null);
+  const [alignment, setAlignment] = useState<'left' | 'center' | 'right'>('left');
 
   function addImage() {
     const url = imageUrlRef.current?.value;
@@ -76,6 +80,24 @@ export function Menu({ position }: ArtefactCreatorProps) {
     }));
   }
 
+  function addButton() {
+    const url = buttonUrlRef.current?.value;
+    const text = buttonTextRef.current?.value;
+    const align = alignment;
+
+    if (!url || !text || !align) {
+      return
+    }
+
+    setBlocks(insertAt(blocks, position, {
+      type: "button",
+      text,
+      url,
+      align,
+      id: `button-${position}`,
+    }));
+  }
+
   return <>
     <ContextMenuItem inset onClick={addText}>
       Add a text box
@@ -112,6 +134,68 @@ export function Menu({ position }: ArtefactCreatorProps) {
 
             <Button onClick={addImage} className="mt-4">
               Add image
+            </Button>
+          </CardContent>
+        </Card>
+      </ContextMenuSubContent>
+    </ContextMenuSub>
+
+    <ContextMenuSub>
+      <ContextMenuSubTrigger inset>
+        Add a button
+      </ContextMenuSubTrigger>
+
+      <ContextMenuSubContent asChild>
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              Add a button
+            </CardTitle>
+
+            <CardDescription>
+              Add a button to your portfolio that links to a specific URL
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <Label className="block mb-2">
+              Button text
+            </Label>
+
+            <Input ref={buttonTextRef} placeholder="Enter button text" type="text" />
+
+            <Label className="block mt-4 mb-2">
+              Button URL
+            </Label>
+
+            <Input ref={buttonUrlRef} placeholder="Enter button URL" type="text" />
+
+            <Label className="block mt-4 mb-2">
+              Button alignment
+            </Label>
+
+            <Select onValueChange={(val) => setAlignment(val as 'left' | 'center' | 'right')}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select button alignment" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="left">
+                  Left
+                </SelectItem>
+
+                <SelectItem value="center">
+                  Center
+                </SelectItem>
+
+                <SelectItem value="right">
+                  Right
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button onClick={addButton} className="mt-4">
+              Add button
             </Button>
           </CardContent>
         </Card>

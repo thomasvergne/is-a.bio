@@ -50,7 +50,7 @@ export function Navigation({ setBlocks, setSettings, settings, action }: Navigat
                 <Input ref={nameInputRef} defaultValue={settings.title} type="text" placeholder="Enter the name of your portfolio" className="mt-2" />
                 <Input ref={descriptionInputRef} defaultValue={settings.description} type="text" placeholder="Enter the description of your portfolio" className="mt-2 mb-2" />
 
-                <Select onValueChange={(value) => setSize(value as Settings['size'])} defaultValue="small">
+                <Select onValueChange={(value) => setSize(value as Settings['size'])} defaultValue={settings.size}>
                   <SelectTrigger>
                     <SelectValue placeholder="Set the width of your portfolio" />
                   </SelectTrigger>

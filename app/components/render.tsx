@@ -1,23 +1,24 @@
 import { marked } from "marked";
-import { Block, gridSizes } from "./blocks";
+import { alignment, Block, columnSpan, gridSizes } from "./blocks";
 import { cn } from "~/lib/utils";
+import { Button } from "./ui/button";
 
 export function PreviewBlock({ block }: { block: Block }) {
   switch (block.type) {
     case 'image': {
-      const { url, alt } = block;
+      const { url, alt, columnSpan: colS } = block;
 
       return <img
         src={url}
         alt={alt}
-        className="w-full h-96 object-cover my-8"
+        className={cn("w-full h-96 object-cover my-8", colS && columnSpan[colS])}
       />;
     }
 
     case 'text': {
       const { content } = block;
 
-      return <div className="prose my-2" dangerouslySetInnerHTML={{ __html: marked(content) }} />;
+      return <div className="prose my-2 max-w-full" dangerouslySetInnerHTML={{ __html: marked(content) }} />;
     }
 
     case 'grid': {
@@ -25,6 +26,18 @@ export function PreviewBlock({ block }: { block: Block }) {
       return <div className={cn("grid gap-4 my-4", size in gridSizes ? gridSizes[size] : 'col-span-1')}>
         {children.map((child, index) => <PreviewBlock key={index} block={child} />)}
       </div>;
+    }
+
+    case 'button': {
+      const { text, url, align, columnSpan: colS } = block;
+
+      return <div className={cn("w-full flex items-center", alignment[align], colS && columnSpan[colS])}>
+        <Button asChild>
+          <a href={url}>
+            {text}
+          </a>
+        </Button>
+      </div>
     }
   }
 }

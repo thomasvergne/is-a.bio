@@ -3,6 +3,7 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { breakpoints } from "~/components/blocks";
 import { PreviewBlock } from "~/components/render";
+import { Button } from "~/components/ui/button";
 import { createSupabaseServerClient, WebsiteData } from "~/lib/supabase";
 import { cn } from "~/lib/utils";
 
@@ -12,6 +13,41 @@ export const meta: MetaFunction = () => {
     { name: "description", content: "Welcome to Remix!" },
   ];
 };
+
+function MainPage() {
+  return <main className="bg-slate-100 min-h-screen">
+    <nav className="py-16 max-w-7xl mx-auto w-full grid grid-cols-4">
+      <span className="relative inline-flex max-md:justify-center mx-auto py-2 px-4 bg-primary text-primary-foreground w-max rounded-lg font-black">
+        is-a.bio
+      </span>
+
+      <div className="col-span-3 justify-self-end gap-x-2 flex flex-row items-center">
+        <Button variant="outline">
+          Login to your account
+        </Button>
+
+        <Button>
+          Start building your website
+        </Button>
+      </div>
+    </nav>
+
+    <div className="max-w-2xl mx-auto w-full text-center mt-32">
+      <h1 className="text-5xl font-bold text-primary">
+        Create your next-level portfolio
+      </h1>
+
+      <p className="py-8 text-xl text-muted-foreground">
+        Start building your portfolio today with is-a.bio. Showcase your work, your projects, and your skills to the world.
+      </p>
+
+      <Button>
+        Get started for free
+      </Button>
+    </div>
+
+  </main>
+}
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { supabaseClient, headers } = createSupabaseServerClient(request);
@@ -43,11 +79,7 @@ export default function Index() {
   const { data } = useLoaderData<typeof loader>();
 
   if (!data || !data.content) {
-    return (
-      <div>
-        <h1>No website found.</h1>
-      </div>
-    );
+    return <MainPage />
   }
   
   const { settings, blocks } = data.content;

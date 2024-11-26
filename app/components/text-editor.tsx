@@ -25,7 +25,7 @@ export function TextEditor({ value, onValueChange, setSize, size, className, del
                 placeholder="Enter the description of your portfolio"
                 onChange={(e) => onValueChange(e.target.value)} 
               />
-            : <div dangerouslySetInnerHTML={{ __html: marked(value) }} className={cn("w-full prose", className)} />
+            : <div dangerouslySetInnerHTML={{ __html: marked(value) }} className={cn("!w-full prose max-w-full", className)} />
         }
       </ContextMenuTrigger>
 
