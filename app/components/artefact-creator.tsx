@@ -39,6 +39,7 @@ export function Menu({ position }: ArtefactCreatorProps) {
   const buttonUrlRef = useRef<HTMLInputElement>(null);
   const buttonTextRef = useRef<HTMLInputElement>(null);
   const [alignment, setAlignment] = useState<'left' | 'center' | 'right'>('left');
+  const [height, setHeight] = useState<number>(3);
 
   function addImage() {
     const url = imageUrlRef.current?.value;
@@ -95,6 +96,14 @@ export function Menu({ position }: ArtefactCreatorProps) {
       url,
       align,
       id: `button-${position}`,
+    }));
+  }
+
+  function addSeparator() {
+    setBlocks(insertAt(blocks, position, {
+      type: "vertical-space",
+      size: height,
+      id: `separator-${position}`,
     }));
   }
 
@@ -196,6 +205,66 @@ export function Menu({ position }: ArtefactCreatorProps) {
 
             <Button onClick={addButton} className="mt-4">
               Add button
+            </Button>
+          </CardContent>
+        </Card>
+      </ContextMenuSubContent>
+    </ContextMenuSub>
+
+    <ContextMenuSub>
+      <ContextMenuSubTrigger inset>
+        Add a vertical separator
+      </ContextMenuSubTrigger>
+
+      <ContextMenuSubContent asChild>
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              Add a vertical separator
+            </CardTitle>
+
+            <CardDescription>
+              Add a vertical separator to your portfolio
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <Label className="block mb-2">
+              Separator height
+            </Label>
+
+            <Select onValueChange={(val) => setHeight(Number(val) ?? 1)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select separator height" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="1">
+                  Very small
+                </SelectItem>
+
+                <SelectItem value="2">
+                  Small
+                </SelectItem>
+
+                <SelectItem value="3">
+                  Medium
+                </SelectItem>
+
+                <SelectItem value="4">
+                  Large
+                </SelectItem>
+
+                <SelectItem value="5">
+                  Very large
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </CardContent>
+
+          <CardContent>
+            <Button onClick={addSeparator}>
+              Add separator
             </Button>
           </CardContent>
         </Card>

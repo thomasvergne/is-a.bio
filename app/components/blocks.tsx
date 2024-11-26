@@ -56,11 +56,25 @@ interface BlockButton {
   id: string;
 }
 
+interface BlockVerticalSpace {
+  type: "vertical-space";
+  size: number;
+  id: string; 
+}
+
 export const columnSpan: Record<number, string> = {
   1: 'col-span-1',
   2: 'col-span-2',
   3: 'col-span-3',
 };
+
+export const sizeTable: Record<number, string> = {
+  1: 'h-4',
+  2: 'h-8',
+  3: 'h-16',
+  4: 'h-24',
+  5: 'h-32',
+}
 
 export const alignment: Record<'left' | 'center' | 'right', string> = {
   left: 'justify-start',
@@ -68,7 +82,7 @@ export const alignment: Record<'left' | 'center' | 'right', string> = {
   right: 'justify-end',
 };
 
-export type Block = (BlockText | BlockImage | BlockGrid | BlockButton) & { columnSpan?: number; };
+export type Block = (BlockText | BlockImage | BlockGrid | BlockButton | BlockVerticalSpace) & { columnSpan?: number; };
 
 interface RenderBlockProps {
   block: Block;
@@ -390,6 +404,12 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
           </ContextMenu>
         </BlockContext.Provider>
       </>
+    }
+
+    case 'vertical-space': {
+      const { size } = renderedBlock;
+
+      return <div className={cn("w-px mx-auto border-l border-dashed border-primary/30 relative", sizeTable[size])} />
     }
   }
 }

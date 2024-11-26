@@ -1,5 +1,5 @@
 import { marked } from "marked";
-import { alignment, Block, columnSpan, gridSizes } from "./blocks";
+import { alignment, Block, columnSpan, gridSizes, sizeTable } from "./blocks";
 import { cn } from "~/lib/utils";
 import { Button } from "./ui/button";
 
@@ -38,6 +38,12 @@ export function PreviewBlock({ block }: { block: Block }) {
           </a>
         </Button>
       </div>
+    }
+
+    case 'vertical-space': {
+      const { size } = block;
+
+      return <div className={cn("relative", sizeTable[size])} />;
     }
   }
 }
