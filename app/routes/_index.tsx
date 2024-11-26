@@ -17,7 +17,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { supabaseClient, headers } = createSupabaseServerClient(request);
 
   const url = new URL(request.url);
-  const subdomain = url.hostname.split(".")[0];
+  const subdomains = url.hostname.split(".");
+
+  if (subdomains.length < 3) {
+    return { status: 200, message: 'No website found.', data: null };
+  }
+
+  const subdomain = subdomains[0];
 
   const { data: website, error } = await supabaseClient.from('websites').select('*').eq('subdomain', subdomain).single();
 
