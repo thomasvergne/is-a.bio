@@ -14,11 +14,54 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useLocalStorage } from 'usehooks-ts'
 import { cn } from "~/lib/utils";
 import { Navigation } from "~/components/layouts/navigation";
-import { redirect, useLoaderData } from "@remix-run/react";
-import { LoaderFunctionArgs } from "@remix-run/node";
+import { redirect, useLoaderData, useSubmit } from "@remix-run/react";
+import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { database, WebsiteData } from "~/db.server";
-import { getSession } from "~/session.server";
+import { fetchUser, getSession } from "~/session.server";
 import { SortableItem } from "~/components/sortable-item";
+import { ClientResponseError } from "pocketbase";
+
+export async function action({ request, params }: ActionFunctionArgs) {
+  const formData = await request.formData();
+
+  const blocks = JSON.parse(formData.get('blocks') as string) as Block[];
+  const settings = JSON.parse(formData.get('settings') as string) as Settings;
+  const { slug } = params;
+  const pb = database;
+
+  if (!slug) {
+    return redirect('/builder/new');
+  }
+
+  try {
+    const session = await fetchUser(request);
+
+    if (!session) {
+      return redirect('/login');
+    }
+    
+    const website = await pb.collection('websites').getOne<WebsiteData>(slug);
+
+    if (website.created_by !== session.id) {
+      return redirect('/unauthorized');
+    }
+
+    await pb.collection('websites').update<WebsiteData>(slug, {
+      content: {
+        blocks,
+        settings,
+      }
+    });
+
+    return redirect(`/builder/${slug}`);
+  } catch(e) {
+    const error = e as ClientResponseError;
+    return {
+      status: 500,
+      message: error.message,
+    }
+  }
+}
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const { slug } = params;
@@ -31,6 +74,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   try {
     const session = await getSession(request);
+
+    if (!session) {
+      return redirect('/login');
+    }
+
     const website = await pb.collection('websites').getOne<WebsiteData>(slug);
 
     if (website.created_by !== session.data.id) {
@@ -61,11 +109,13 @@ export default function BuilderIndex() {
 
   const [blocks, setBlocks] = useLocalStorage<Block[]>(`blocks-${loaderData.data.id}`, loaderData.data.content.blocks);
   const [settings, setSettings] = useLocalStorage<Settings>(`settings-${loaderData.data.id}`, loaderData.data.content.settings);
+  const submit = useSubmit();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor)
   );
+
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -86,9 +136,26 @@ export default function BuilderIndex() {
 
   return <div className="bg-slate-100 min-h-screen">
     <BlockContext.Provider value={{ blocks, setBlocks }}>
-      <Navigation published={loaderData.data.published} name={loaderData.data.id} setBlocks={setBlocks} setSettings={setSettings} settings={settings} action="preview" />
+      <Navigation 
+        published={loaderData.data.published} 
+        name={loaderData.data.id}
+        setBlocks={setBlocks} setSettings={setSettings} 
+        settings={settings} action="preview" 
+        onSave={() => {
+          const formData = new FormData();
+          formData.append('blocks', JSON.stringify(blocks));
+          formData.append('settings', JSON.stringify(settings));
+          
+          submit(formData, {
+            method: 'post',
+            encType: 'multipart/form-data',
+          });
+        }}
+      />
+
       <main className={cn("mx-auto w-full py-32 px-4", breakpoints[settings.size])}>
         <DndContext
+          id="draggable-table-01"
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}

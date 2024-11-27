@@ -66,9 +66,10 @@ interface NavigationProps {
   action: 'edit' | 'preview';
   name: string;
   published: boolean;
+  onSave?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-export function Navigation({ name, published, setSettings, settings, action }: NavigationProps) {
+export function Navigation({ name, onSave, published, setSettings, settings, action }: NavigationProps) {
   const nameInputRef = useRef<HTMLInputElement>(null);
   const descriptionInputRef = useRef<HTMLInputElement>(null);
   const [size, setSize] = useState<Settings['size']>(settings.size);
@@ -145,6 +146,10 @@ export function Navigation({ name, published, setSettings, settings, action }: N
               </DialogFooter>
             </DialogContent>
           </Dialog>
+
+          <Button variant="outline" onClick={onSave}>
+            Save changes
+          </Button>
 
           <Button variant="outline" asChild>
             <Link to={action === 'preview' ? `/builder/preview/${name}` : `/builder/${name}`}>
