@@ -1,4 +1,4 @@
-import type { MetaFunction } from "@remix-run/node";
+import type { LinksFunction, MetaFunction } from "@remix-run/node";
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { breakpoints } from "~/components/blocks";
@@ -39,6 +39,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   } catch(e) {
     return { status: 200, message: 'No website found.', data: null, user: session };
   }
+}
+
+export const links: LinksFunction = () => {
+  return [
+    {
+      rel: "icon",
+      href: "/favicon.png",
+      type: "image/png",
+    },
+  ]
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -88,7 +98,7 @@ function MainPage({ data }: { data: Unpromise<ReturnType<typeof loader>> }) {
     <MainNavigation user={data.user} />
 
     <div className="max-w-2xl mx-auto w-full text-center mt-32">
-      <h1 className="text-5xl font-bold text-primary">
+      <h1 className="text-5xl font-bold text-foreground">
         Create your next-level portfolio
       </h1>
 
@@ -117,7 +127,7 @@ export default function Index() {
 
   return <>
     <div className={cn("w-full min-h-screen bg-slate-100 flex flex-col")}>
-      <div className={cn("flex-grow py-32 px-4", breakpoints[settings.size])}>
+      <div className={cn("flex-grow py-32 px-4 mx-auto", breakpoints[settings.size])}>
         {blocks.map((block, index) => <PreviewBlock key={index} block={block} />)}
       </div>
       

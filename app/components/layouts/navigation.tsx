@@ -11,9 +11,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 export function MainNavigation({ user }: { user: UserData | null }) {
   return <nav className="py-16 max-w-7xl mx-auto w-full grid grid-cols-4">
-    <span className="relative max-md:inline-flex max-md:justify-center max-md:mx-auto py-2 px-4 bg-primary text-primary-foreground w-max rounded-lg font-black">
-      is-a.bio
-    </span>
+    <Link to="/" className="relative max-md:inline-flex max-md:justify-center max-md:mx-auto">
+      <img src="/logo.svg" className="w-24 h-auto" alt="" />
+    </Link>
 
     <div className="col-span-3 justify-self-end gap-x-2 flex flex-row items-center">
       {
@@ -77,8 +77,8 @@ export function Navigation({ name, onSave, published, setSettings, settings, act
   return <>
     <nav className="py-4 md:py-8 bg-white">
       <div className="max-w-7xl mx-auto w-full grid md:grid-cols-4 gap-4">
-        <Link to="/" className="relative max-md:inline-flex max-md:justify-center max-md:mx-auto py-2 px-4 bg-primary text-primary-foreground w-max rounded-lg font-black">
-          is-a.bio
+        <Link to="/" className="relative max-md:inline-flex max-md:justify-center max-md:mx-auto">
+          <img src="/logo.svg" className="w-24 h-auto" alt="" />
         </Link>
 
         <div className="md:col-span-3 justify-self-center md:justify-self-end self-center flex items-center md:justify-end flex-row gap-x-4">
