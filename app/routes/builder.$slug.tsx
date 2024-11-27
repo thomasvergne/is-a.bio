@@ -11,7 +11,6 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { useLocalStorage } from 'usehooks-ts'
 import { cn } from "~/lib/utils";
 import { Navigation } from "~/components/layouts/navigation";
 import { redirect, useActionData, useLoaderData, useSubmit } from "@remix-run/react";
@@ -22,6 +21,7 @@ import { SortableItem } from "~/components/sortable-item";
 import { ClientResponseError } from "pocketbase";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { MessageCircleWarning } from "lucide-react";
+import { useState } from "react";
 
 export async function action({ request, params }: ActionFunctionArgs) {
   const formData = await request.formData();
@@ -111,8 +111,8 @@ export default function BuilderIndex() {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
-  const [blocks, setBlocks] = useLocalStorage<Block[]>(`blocks-${loaderData.data.id}`, loaderData.data.content.blocks);
-  const [settings, setSettings] = useLocalStorage<Settings>(`settings-${loaderData.data.id}`, loaderData.data.content.settings);
+  const [blocks, setBlocks] = useState<Block[]>(loaderData.data.content.blocks);
+  const [settings, setSettings] = useState<Settings>(loaderData.data.content.settings);
   const submit = useSubmit();
 
   const sensors = useSensors(

@@ -135,12 +135,14 @@ export function Navigation({ name, onSave, published, setSettings, settings, act
                   <DialogClose asChild className="max-md:w-full">
                     <Button variant="outline">Cancel</Button>
                   </DialogClose>
-                  <Button className="max-md:w-full" onClick={() => {
+                  <Button className="max-md:w-full" onClick={(e) => {
                     setSettings({
                       title: nameInputRef.current?.value ?? settings.title,
                       description: descriptionInputRef.current?.value ?? settings.description,
                       size,
-                    })
+                    });
+
+                    return onSave?.call(null, e);
                   }}>Save changes</Button>
                 </div>
               </DialogFooter>
