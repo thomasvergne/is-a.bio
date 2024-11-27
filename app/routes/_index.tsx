@@ -114,7 +114,16 @@ export default function Index() {
   }
   
   const { settings, blocks } = data.data.content;
-  return <div className={cn("mx-auto w-full py-32 px-4", breakpoints[settings.size])}>
-    {blocks.map((block, index) => <PreviewBlock key={index} block={block} />)}
-  </div>
+
+  return <>
+    <div className={cn("w-full min-h-screen bg-slate-100 flex flex-col")}>
+      <div className={cn("flex-grow py-32 px-4", breakpoints[settings.size])}>
+        {blocks.map((block, index) => <PreviewBlock key={index} block={block} />)}
+      </div>
+      
+      <p className="bg-white text-sm text-center w-full relative border-t border-slate-200 py-2">
+        Made with <Link className="hover:underline" to="https://is-a.bio">is-a.bio</Link>
+      </p>
+    </div>
+  </>
 }
