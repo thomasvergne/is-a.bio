@@ -97,7 +97,7 @@ function MainPage({ data }: { data: Unpromise<ReturnType<typeof loader>> }) {
   return <main className="bg-slate-100 min-h-screen">
     <MainNavigation user={data.user} />
 
-    <div className="max-w-2xl mx-auto w-full text-center mt-32">
+    <header className="max-w-2xl mx-auto w-full text-center mt-24">
       <h1 className="text-5xl font-bold text-foreground">
         Create your next-level portfolio
       </h1>
@@ -111,8 +111,15 @@ function MainPage({ data }: { data: Unpromise<ReturnType<typeof loader>> }) {
           Get started for free
         </Link>
       </Button>
-    </div>
+    </header>
+    
+    <div className="relative">
+      <img src="/screenshot.png" className="max-w-3xl mt-16 mx-auto border rounded-lg" alt="" />
 
+      <div className="absolute bottom-0 h-2/3 w-full bg-gradient-to-t from-slate-100 to-transparent">
+
+      </div>
+    </div>
   </main>
 }
 
