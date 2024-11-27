@@ -35,15 +35,22 @@ export function Menu({ position }: ArtefactCreatorProps) {
 
   const imageUrlRef = useRef<HTMLInputElement>(null);
   const imageAltRef = useRef<HTMLInputElement>(null);
+  const imageHeightRef = useRef<HTMLInputElement>(null);
+  const imageWidthRef = useRef<HTMLInputElement>(null);
+
   const gridSizeRef = useRef<HTMLInputElement>(null);
+
   const buttonUrlRef = useRef<HTMLInputElement>(null);
   const buttonTextRef = useRef<HTMLInputElement>(null);
   const [alignment, setAlignment] = useState<'left' | 'center' | 'right'>('left');
+
   const [height, setHeight] = useState<number>(3);
 
   function addImage() {
     const url = imageUrlRef.current?.value;
     const alt = imageAltRef.current?.value;
+    const height = imageHeightRef.current?.value;
+    const width = imageWidthRef.current?.value;
 
     if (!url || !alt) {
       return
@@ -54,6 +61,8 @@ export function Menu({ position }: ArtefactCreatorProps) {
       url,
       alt,
       id: `image-${position}`,
+      height: height ? parseInt(height, 10) : 'auto',
+      width: width ? parseInt(width, 10) : 'auto',
     }));
   }
 
@@ -140,6 +149,20 @@ export function Menu({ position }: ArtefactCreatorProps) {
             </Label>
 
             <Input ref={imageAltRef} placeholder="Enter image alt text" type="text" />
+
+
+            <div className="grid grid-cols-2 gap-2"> 
+              <Label className="mt-4 block mb-2">
+                Image width
+              </Label>
+
+              <Label className="mt-4 block mb-2">
+                Image height
+              </Label>
+
+              <Input ref={imageWidthRef} placeholder="Enter image width" type="number" />
+              <Input ref={imageHeightRef} placeholder="Enter image height" type="number" />
+            </div>
 
             <Button onClick={addImage} className="mt-4">
               Add image

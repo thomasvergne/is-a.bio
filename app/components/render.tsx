@@ -6,12 +6,13 @@ import { Button } from "./ui/button";
 export function PreviewBlock({ block }: { block: Block }) {
   switch (block.type) {
     case 'image': {
-      const { url, alt, columnSpan: colS } = block;
+      const { url, alt, columnSpan: colS, height, width } = block;
 
       return <img
         src={url}
         alt={alt}
-        className={cn("w-full h-96 object-cover my-8", colS && columnSpan[colS])}
+        className={cn("object-cover my-8", colS && columnSpan[colS])}
+        style={{ height: height === 'auto' ? '12rem' : `${height}px`, width: width === 'auto' ? 'auto' : `${width}px` }}
       />;
     }
 

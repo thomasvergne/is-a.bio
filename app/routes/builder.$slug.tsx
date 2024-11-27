@@ -14,12 +14,14 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useLocalStorage } from 'usehooks-ts'
 import { cn } from "~/lib/utils";
 import { Navigation } from "~/components/layouts/navigation";
-import { redirect, useLoaderData, useSubmit } from "@remix-run/react";
+import { redirect, useActionData, useLoaderData, useSubmit } from "@remix-run/react";
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { database, WebsiteData } from "~/db.server";
 import { fetchUser, getSession } from "~/session.server";
 import { SortableItem } from "~/components/sortable-item";
 import { ClientResponseError } from "pocketbase";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { MessageCircleWarning } from "lucide-react";
 
 export async function action({ request, params }: ActionFunctionArgs) {
   const formData = await request.formData();
@@ -56,6 +58,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     return redirect(`/builder/${slug}`);
   } catch(e) {
     const error = e as ClientResponseError;
+
     return {
       status: 500,
       message: error.message,
@@ -106,6 +109,7 @@ function moveFromTo<A>(array: A[], from: number, to: number) {
 
 export default function BuilderIndex() {
   const loaderData = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
 
   const [blocks, setBlocks] = useLocalStorage<Block[]>(`blocks-${loaderData.data.id}`, loaderData.data.content.blocks);
   const [settings, setSettings] = useLocalStorage<Settings>(`settings-${loaderData.data.id}`, loaderData.data.content.settings);
@@ -154,6 +158,19 @@ export default function BuilderIndex() {
       />
 
       <main className={cn("mx-auto w-full py-32 px-4", breakpoints[settings.size])}>
+        {actionData?.message && (
+          <Alert variant="destructive">
+            <MessageCircleWarning className="w-5 h-5 mr-2" />
+
+            <AlertTitle>
+              An error occured while saving the portfolio
+            </AlertTitle>
+            <AlertDescription>
+              {actionData.message}
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <DndContext
           id="draggable-table-01"
           sensors={sensors}

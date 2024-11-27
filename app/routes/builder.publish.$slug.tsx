@@ -95,7 +95,7 @@ export default function BuilderPublish() {
               <MessageCircleWarning className="w-5 h-5 mr-2" />
 
               <AlertTitle>
-                An error occured while creating the portfolio
+                An error occured while publishing the portfolio
               </AlertTitle>
               <AlertDescription>
                 {actionData.message}

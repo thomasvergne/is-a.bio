@@ -39,6 +39,8 @@ interface BlockImage {
   url: string;
   alt: string;
   id: string;
+  width: number | 'auto';
+  height: number | 'auto';
 }
 
 interface BlockGrid {
@@ -97,6 +99,8 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
 
   const imageUrlRef = useRef<HTMLInputElement>(null);
   const imageAltRef = useRef<HTMLInputElement>(null);
+  const imageWidthRef = useRef<HTMLInputElement>(null);
+  const imageHeightRef = useRef<HTMLInputElement>(null);
   const gridSizeRef = useRef<HTMLInputElement>(null);
   const buttonUrlRef = useRef<HTMLInputElement>(null);
   const buttonTextRef = useRef<HTMLInputElement>(null);
@@ -108,7 +112,7 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
 
   switch (renderedBlock.type) {
     case "image": {
-      const { url, alt, columnSpan: colS } = renderedBlock;
+      const { url, alt, columnSpan: colS, height, width } = renderedBlock;
       return <>
         <ContextMenu>
           <ContextMenuTrigger asChild>
@@ -116,7 +120,8 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
               key={index}
               src={url}
               alt={alt}
-              className={cn("w-full h-96 object-cover my-8", colS && columnSpan[colS])}
+              className={cn("object-cover my-8", colS && columnSpan[colS])}
+              style={{ height: height === 'auto' ? '12rem' : `${height}px`, width: width === 'auto' ? 'auto' : `${width}px` }}
             />
           </ContextMenuTrigger>
 
@@ -141,6 +146,19 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
 
                 <Input ref={imageAltRef} placeholder="Enter image alt text" type="text" defaultValue={alt} />
 
+                <div className="grid grid-cols-2 gap-2"> 
+                  <Label className="mt-4 block mb-2">
+                    Image width
+                  </Label>
+
+                  <Label className="mt-4 block mb-2">
+                    Image height
+                  </Label>
+
+                  <Input ref={imageWidthRef} placeholder="Enter image width" type="number" defaultValue={width} />
+                  <Input ref={imageHeightRef} placeholder="Enter image height" type="number" defaultValue={height} />
+                </div>
+
                 { 
                   isGrid 
                     && <>
@@ -159,12 +177,16 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
 
                   const url = imageUrlRef.current.value;
                   const alt = imageAltRef.current.value;
+                  const width = imageWidthRef.current ? parseInt(imageWidthRef.current.value, 10) : 'auto';
+                  const height = imageHeightRef.current ? parseInt(imageHeightRef.current.value, 10) : 'auto';
 
                   updateBlock({
                     type: 'image',
                     url,
                     alt,
                     id: renderedBlock.id,
+                    width,
+                    height,
                   }, index);
                 }}>
                   Update image
