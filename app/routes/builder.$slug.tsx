@@ -28,6 +28,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
   const blocks = JSON.parse(formData.get('blocks') as string) as Block[];
   const settings = JSON.parse(formData.get('settings') as string) as Settings;
+  const favicon = formData.get('favicon') as File | null;
+
   const { slug } = params;
   const pb = database;
 
@@ -48,13 +50,15 @@ export async function action({ request, params }: ActionFunctionArgs) {
       return redirect('/unauthorized');
     }
 
-    await pb.collection('websites').update<WebsiteData>(slug, {
-      content: {
-        blocks,
-        settings,
-      }
-    });
+    const updateFormData = new FormData();
+    updateFormData.append('content', JSON.stringify({ blocks, settings }));
+    
+    if (favicon) {
+      updateFormData.append('favicon', favicon);
+    }
 
+    await pb.collection('websites').update<WebsiteData>(slug, updateFormData);
+ 
     return redirect(`/builder/${slug}`);
   } catch(e) {
     const error = e as ClientResponseError;
@@ -112,7 +116,7 @@ export default function BuilderIndex() {
   const actionData = useActionData<typeof action>();
 
   const [blocks, setBlocks] = useState<Block[]>(loaderData.data.content.blocks);
-  const [settings, setSettings] = useState<Settings>(loaderData.data.content.settings);
+  const [settings, setSettings] = useState<Settings>(loaderData.data.content.settings as Settings);
   const submit = useSubmit();
 
   const sensors = useSensors(
@@ -149,6 +153,10 @@ export default function BuilderIndex() {
           const formData = new FormData();
           formData.append('blocks', JSON.stringify(blocks));
           formData.append('settings', JSON.stringify(settings));
+
+          if (settings.favicon && settings.favicon instanceof File) {
+            formData.append('favicon', settings.favicon);
+          }
           
           submit(formData, {
             method: 'post',
@@ -159,7 +167,7 @@ export default function BuilderIndex() {
 
       <main className={cn("mx-auto w-full py-32 px-4", breakpoints[settings.size])}>
         {actionData?.message && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="mb-8">
             <MessageCircleWarning className="w-5 h-5 mr-2" />
 
             <AlertTitle>

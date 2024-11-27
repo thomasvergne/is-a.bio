@@ -12,7 +12,14 @@ export function PreviewBlock({ block }: { block: Block }) {
         src={url}
         alt={alt}
         className={cn("object-cover my-8", colS && columnSpan[colS])}
-        style={{ height: height === 'auto' ? '12rem' : `${height}px`, width: width === 'auto' ? 'auto' : `${width}px` }}
+        style={{ 
+          height: height === 'auto' ? '12rem' : `${height}px`, 
+          width: width === 'auto' 
+            ? 'auto' 
+            : width === 'full'
+              ? '100%'
+              : `${width}px` 
+        }}
       />;
     }
 

@@ -8,9 +8,10 @@ import { useRef, useState } from "react";
 import { Block, Settings } from "../blocks";
 import { UserData } from "~/session.server";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { Label } from "../ui/label";
 
 export function MainNavigation({ user }: { user: UserData | null }) {
-  return <nav className="py-16 max-w-7xl mx-auto w-full grid grid-cols-4">
+  return <nav className="py-16 lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto w-full grid grid-cols-4">
     <Link to="/" className="relative max-md:inline-flex max-md:justify-center max-md:mx-auto">
       <img src="/logo.svg" className="w-24 h-auto" alt="" />
     </Link>
@@ -72,11 +73,12 @@ interface NavigationProps {
 export function Navigation({ name, onSave, published, setSettings, settings, action }: NavigationProps) {
   const nameInputRef = useRef<HTMLInputElement>(null);
   const descriptionInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [size, setSize] = useState<Settings['size']>(settings.size);
 
   return <>
     <nav className="py-4 md:py-8 bg-white">
-      <div className="max-w-7xl mx-auto w-full grid md:grid-cols-4 gap-4">
+      <div className="lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto w-full grid md:grid-cols-4 gap-4">
         <Link to="/" className="relative max-md:inline-flex max-md:justify-center max-md:mx-auto">
           <img src="/logo.svg" className="w-24 h-auto" alt="" />
         </Link>
@@ -123,6 +125,12 @@ export function Navigation({ name, onSave, published, setSettings, settings, act
                     </SelectItem>
                   </SelectContent>
                 </Select>
+                
+                <Label className="mt-2 block">
+                  Your portfolio icon
+                </Label>
+
+                <Input ref={fileInputRef} type="file" id="portfolio-icon" name="portfolio-icon" className="mt-2" />
               </div>
 
               <DialogFooter className="w-full flex md:!justify-between gap-2">
@@ -140,6 +148,7 @@ export function Navigation({ name, onSave, published, setSettings, settings, act
                       title: nameInputRef.current?.value ?? settings.title,
                       description: descriptionInputRef.current?.value ?? settings.description,
                       size,
+                      favicon: fileInputRef.current?.files?.[0] ?? settings.favicon,
                     });
 
                     return onSave?.call(null, e);

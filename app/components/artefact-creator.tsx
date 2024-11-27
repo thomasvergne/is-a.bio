@@ -56,13 +56,17 @@ export function Menu({ position }: ArtefactCreatorProps) {
       return
     }
 
+    const width_ = isNaN(Number(width)) 
+      ? width === 'full' ? 'full' : 'auto'
+      : Number(width);
+
     setBlocks(insertAt(blocks, position, {
       type: "image",
       url,
       alt,
       id: `image-${position}`,
       height: height ? parseInt(height, 10) : 'auto',
-      width: width ? parseInt(width, 10) : 'auto',
+      width: width_,
     }));
   }
 

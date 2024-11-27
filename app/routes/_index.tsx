@@ -1,4 +1,4 @@
-import type { LinksFunction, MetaFunction } from "@remix-run/node";
+import type { MetaFunction } from "@remix-run/node";
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { breakpoints } from "~/components/blocks";
@@ -30,25 +30,21 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       return { status: 200, message: 'No website found.', data: null, user: session };
     }
 
+    const faviconURL = await pb.files.getURL(website, website.favicon);
+    const websiteWithURL = {
+      ...website,
+      favicon: faviconURL,
+    }
+
     return {
       status: 200,
       message: `Website found`,
-      data: website,
+      data: websiteWithURL,
       user: session,
     };
   } catch(e) {
     return { status: 200, message: 'No website found.', data: null, user: session };
   }
-}
-
-export const links: LinksFunction = () => {
-  return [
-    {
-      rel: "icon",
-      href: "/favicon.png",
-      type: "image/png",
-    },
-  ]
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -69,6 +65,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
         property: "og:description",
         content: description,
       },
+
+      { tagName: "link", rel: 'icon', href: '/favicon.png', type: 'image/png' }
     ]
   }
 
@@ -88,6 +86,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
       property: "og:description",
       content: settings.description,
     },
+    { tagName: "link", rel: 'icon', href: data.data.favicon, type: 'image/png' }
+
   ]
 }
 

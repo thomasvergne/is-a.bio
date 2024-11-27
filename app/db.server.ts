@@ -16,4 +16,5 @@ export interface WebsiteData {
   collectionId: string;
   created_by: string;
   published: boolean;
+  favicon: string;
 }

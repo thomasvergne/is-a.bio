@@ -13,6 +13,7 @@ export interface Settings {
   title: string;
   description: string;
   size: 'small' | 'medium' | 'large';
+  favicon?: Blob;
 }
 
 export const breakpoints: Record<Settings['size'], string> = {
@@ -39,7 +40,7 @@ interface BlockImage {
   url: string;
   alt: string;
   id: string;
-  width: number | 'auto';
+  width: number | 'auto' | 'full';
   height: number | 'auto';
 }
 
@@ -121,7 +122,14 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
               src={url}
               alt={alt}
               className={cn("object-cover my-8", colS && columnSpan[colS])}
-              style={{ height: height === 'auto' ? '12rem' : `${height}px`, width: width === 'auto' ? 'auto' : `${width}px` }}
+              style={{ 
+                height: height === 'auto' ? '12rem' : `${height}px`, 
+                width: width === 'auto' 
+                  ? 'auto' 
+                  : width === 'full'
+                    ? '100%'
+                    : `${width}px`
+              }}
             />
           </ContextMenuTrigger>
 
@@ -177,7 +185,11 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
 
                   const url = imageUrlRef.current.value;
                   const alt = imageAltRef.current.value;
-                  const width = imageWidthRef.current ? parseInt(imageWidthRef.current.value, 10) : 'auto';
+                  const width = imageWidthRef.current 
+                    ? isNaN(parseInt(imageWidthRef.current.value, 10)) && imageWidthRef.current.value === 'full'
+                      ? 'full'
+                      : parseInt(imageWidthRef.current.value, 10)
+                    : 'auto';
                   const height = imageHeightRef.current ? parseInt(imageHeightRef.current.value, 10) : 'auto';
 
                   updateBlock({
