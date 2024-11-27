@@ -121,7 +121,7 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
               key={index}
               src={url}
               alt={alt}
-              className={cn("object-cover my-8", colS && columnSpan[colS])}
+              className={cn("object-cover", colS && columnSpan[colS])}
               style={{ 
                 height: height === 'auto' ? '12rem' : `${height}px`, 
                 width: width === 'auto' 

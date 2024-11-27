@@ -16,9 +16,11 @@ export function SortableItem({ block, index, id }: { block: Block, index: number
     transition,
   };
 
-  return <div ref={setNodeRef} style={style} className="flex flex-row my-2">
-    <RenderBlock block={block} index={index} />
+  return <div ref={setNodeRef} style={style} className="grid grid-cols-12 my-2">
+    <div className="col-span-11">
+      <RenderBlock block={block} index={index} />
+    </div>
 
-    <GripVertical className="h-6 w-6 ml-2" {...attributes} {...listeners} />
+    <GripVertical className="h-6 w-6 ml-2 col-span-1" {...attributes} {...listeners} />
   </div>
 }
