@@ -127,7 +127,7 @@ export default function Index() {
 
   return <>
     <div className={cn("w-full min-h-screen bg-slate-100 flex flex-col")}>
-      <div className={cn("flex-grow py-32 px-4 mx-auto", breakpoints[settings.size])}>
+      <div className={cn("flex-grow py-32 px-4 mx-auto w-full", breakpoints[settings.size])}>
         {blocks.map((block, index) => <PreviewBlock key={index} block={block} />)}
       </div>
       
