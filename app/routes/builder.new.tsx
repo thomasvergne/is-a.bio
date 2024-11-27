@@ -1,23 +1,61 @@
-import { useNavigate } from "@remix-run/react";
-import { useRef } from "react";
-import { useLocalStorage } from "usehooks-ts";
-import { Settings } from "~/components/blocks";
+import { ActionFunctionArgs } from "@remix-run/node";
+import { Form, redirect, useActionData } from "@remix-run/react";
+import { MessageCircleWarning } from "lucide-react";
+import { ClientResponseError } from "pocketbase";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
+import { database, WebsiteData } from "~/db.server";
+import { fetchUser } from "~/session.server";
+
+export async function action({ request }: ActionFunctionArgs) {
+  const formData = await request.formData();
+  const pb = database;
+  const session = await fetchUser(request);
+
+  if (!session) {
+    return redirect('/login');
+  }
+
+  const title = formData.get('portfolio-name') as string;
+  const description = formData.get('portfolio-description') as string;
+
+  try {
+    const subdomain = title.toLowerCase().replace(/\s/g, '-');
+    
+
+    const website = await pb.collection('websites').create<WebsiteData>({
+      id: subdomain,
+      content: {
+        settings: {
+          title,
+          description,
+          size: 'small',
+        },
+        blocks: [],
+      },
+      created_by: session.id,
+    });
+
+    return redirect(`/builder/${website.id}`);
+  } catch(e: unknown) {
+    const error = e as ClientResponseError;
+    return {
+      status: 500,
+      message: error.message,
+    }
+  }
+}
 
 export default function BuilderNew() {
-  const nameInputRef = useRef<HTMLInputElement>(null);
-  const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
-  const navigate = useNavigate();
-
-  const [settings, setSettings] = useLocalStorage<Settings>("settings", { title: 'Untitled portfolio', size: 'small', description: '' });
-
+  const actionData = useActionData<typeof action>();
+  
   return (
     <main className="min-h-screen bg-slate-100 grid place-items-center">
-      <div className="max-w-3xl mx-auto">
+      <Form method='POST' className="max-w-3xl mx-auto">
         <Card>
           <CardHeader>
             <CardTitle className="text-3xl">
@@ -29,43 +67,42 @@ export default function BuilderNew() {
             </CardDescription>
           </CardHeader>
 
-          <CardContent>
-            <form className="space-y-4">
-              <div>
-                <Label>
-                  The portfolio name
-                </Label>
+          <CardContent className="space-y-4">
+            {actionData?.message && (
+              <Alert variant="destructive">
+                <MessageCircleWarning className="w-5 h-5 mr-2" />
 
-                <Input defaultValue={settings.title} ref={nameInputRef} type="text" placeholder="Enter the name of your portfolio" className="mt-2" />
-              </div>
+                <AlertTitle>
+                  An error occured while creating the portfolio
+                </AlertTitle>
+                <AlertDescription>
+                  {actionData.message}
+                </AlertDescription>
+              </Alert>
+            )}
+            <div>
+              <Label>
+                The portfolio name
+              </Label>
 
-              <div>
-                <Label>
-                  The portfolio description
-                </Label>
+              <Input type="text" id="portfolio-name" name="portfolio-name" placeholder="Enter the name of your portfolio" className="mt-2" />
+            </div>
 
-                <Textarea defaultValue={settings.description} ref={descriptionInputRef} placeholder="Enter the description of your portfolio" className="mt-2" rows={3} />
-              </div>
-            </form>
+            <div>
+              <Label>
+                The portfolio description
+              </Label>
+
+              <Textarea id="portfolio-description" name="portfolio-description" placeholder="Enter the description of your portfolio" className="mt-2" rows={3} />
+            </div>
           </CardContent>
 
           <CardFooter className="flex justify-between">
-            <Button variant="outline">Cancel</Button>
-            <Button onClick={() => {
-              const title = nameInputRef.current?.value;
-              const description = descriptionInputRef.current?.value;
-
-              if (!title || !description) {
-                return
-              }
-
-              setSettings({ title, description, size: 'small' });
-
-              navigate('/builder');
-            }}>Start building your portfolio</Button>
+            <Button variant="outline" type="reset">Cancel</Button>
+            <Button type="submit">Start building your portfolio</Button>
           </CardFooter>
         </Card>
-      </div>
+      </Form>
     </main>
   )
 }

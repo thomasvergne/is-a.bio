@@ -1,96 +1,84 @@
-import { Menu } from "~/components/artefact-creator";
-import { Block, BlockContext, breakpoints, RenderBlock, Settings } from "~/components/blocks";
-import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "~/components/ui/context-menu";
-import { GripVertical } from "lucide-react";
-import {
-  closestCenter,
-  DndContext,
-  DragEndEvent,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { useLocalStorage } from 'usehooks-ts'
-import { cn } from "~/lib/utils";
-import { Navigation } from "~/components/layouts/navigation";
+import { LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { Link, useLoaderData } from "@remix-run/react";
+import { MainNavigation } from "~/components/layouts/navigation";
+import { Button } from "~/components/ui/button";
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
+import { database, WebsiteData } from "~/db.server";
+import { fetchUser } from "~/session.server";
 
-function SortableItem({ block, index, id }: { block: Block, index: number, id: string }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+export async function loader({ request }: LoaderFunctionArgs) {
+  const pb = database;
+  const session = await fetchUser(request);
 
-  return <div ref={setNodeRef} style={style} className="flex flex-row my-2">
-    <RenderBlock block={block} index={index} />
+  if (!session) {
+    return redirect('/login');
+  }
 
-    <GripVertical className="h-6 w-6 ml-2" {...attributes} {...listeners} />
-  </div>
+  try {
+    const websites = await pb.collection('websites').getFullList<WebsiteData>({
+      filter: `created_by = "${session.id}"`
+    });
+
+    return {
+      status: 200,
+      message: 'Websites found',
+      data: websites,
+      user: session,
+    };
+  } catch(e) {
+    return {
+      status: 200,
+      message: 'No websites found',
+      data: [],
+      user: session,
+    };
+  }
 }
 
 export default function BuilderIndex() {
-  const [blocks, setBlocks] = useLocalStorage<Block[]>("blocks", []);
-  const [settings, setSettings] = useLocalStorage<Settings>("settings", { title: 'Untitled portfolio', size: 'small', description: '' });
+  const data = useLoaderData<typeof loader>();
 
+  return <main className="min-h-screen bg-slate-100">
+    <MainNavigation user={data.user} />
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor)
-  );
+    <div className="grid grid-cols-3 gap-8 max-w-7xl mx-auto py-64">
+      <div className="col-span-3">
+        <h1 className="text-4xl font-bold">
+          Your websites
+        </h1>
 
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
+        <p className="text-lg text-muted-foreground mt-2">
+          Here are all the websites you have created with is-a.bio.
+        </p>
+      </div>
 
-    if (!over) return;
-    if (!active) return;
+      {data.data.map((website, index) => (
+        <Card key={index}>
+          <CardHeader>
+            <CardTitle>
+              {website.content.settings.title}
+            </CardTitle>
 
-    if (active.id !== over.id) {
-      setBlocks((blocks) => {
-        const oldIndex = blocks.findIndex((item) => item.id === active.id);
-        const newIndex = blocks.findIndex((item) => item.id === over.id);
+            <CardDescription>
+              {website.content.settings.description}
+            </CardDescription>
+          </CardHeader>
+          
+          <CardFooter className="flex justify-between">
+            <Button variant="outline" asChild>
+              <Link to={`/builder/${website.id}`}>
+                Edit and publish
+              </Link>
+            </Button>
 
-        return arrayMove(blocks, newIndex, oldIndex);
-      });
-    }
-  }
-
-  return <div className="bg-slate-100 min-h-screen">
-    <BlockContext.Provider value={{ blocks, setBlocks }}>
-      <Navigation setBlocks={setBlocks} setSettings={setSettings} settings={settings} action="preview" />
-      <main className={cn("mx-auto w-full py-32 px-4", breakpoints[settings.size])}>
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={blocks.map((block) => block.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            {blocks.map((block, index) => <SortableItem block={block} index={index} id={block.id} key={block.id} />)}
-          </SortableContext>
-        </DndContext>
-        <ContextMenu>
-          <ContextMenuTrigger asChild>
-            <div className="h-12 w-full border border-slate-400 rounded-md border-dashed grid place-items-center text-sm text-muted-foreground my-1 mt-4">
-              Right click to show context menu
-            </div>
-          </ContextMenuTrigger>
-
-          <ContextMenuContent className="w-64">
-            <Menu blocks={blocks} setBlocks={setBlocks} position={blocks.length} />
-          </ContextMenuContent>
-        </ContextMenu>
-      </main>
-    </BlockContext.Provider>
-  </div>
+            <Button asChild>
+              <Link to={`https://${website.id}.is-a.bio`}>
+                Visualize website
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      ))}
+    </div>
+  </main>
 }

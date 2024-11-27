@@ -1,36 +1,44 @@
 import type { MetaFunction } from "@remix-run/node";
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import { breakpoints } from "~/components/blocks";
+import { MainNavigation } from "~/components/layouts/navigation";
 import { PreviewBlock } from "~/components/render";
 import { Button } from "~/components/ui/button";
-import { createSupabaseServerClient, WebsiteData } from "~/lib/supabase";
+import { database, WebsiteData } from "~/db.server";
 import { cn } from "~/lib/utils";
+import { fetchUser } from "~/session.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const { supabaseClient, headers } = createSupabaseServerClient(request);
-
+  const pb = database;
+  const session = await fetchUser(request);
   const url = new URL(request.url);
+
+  // Getting the subdomain from the URL
   const subdomains = url.hostname.split(".");
 
   if (subdomains.length < 3) {
-    return { status: 200, message: 'No website found.', data: null };
+    return { status: 200, message: 'No website found.', data: null, user: session };
   }
 
   const subdomain = subdomains[0];
 
-  const { data: website, error } = await supabaseClient.from('websites').select('*').eq('subdomain', subdomain).single();
+  try {
+    const website = await pb.collection('websites').getOne<WebsiteData>(subdomain);
+    
+    if (!website.published) {
+      return { status: 200, message: 'No website found.', data: null, user: session };
+    }
 
-  if (error) {
-    return { status: 200, message: 'No website found.', data: null };
+    return {
+      status: 200,
+      message: `Website found`,
+      data: website,
+      user: session,
+    };
+  } catch(e) {
+    return { status: 200, message: 'No website found.', data: null, user: session };
   }
-
-  return {
-    status: 200,
-    message: `Website found: ${website?.name}`,
-    data: website as WebsiteData,
-    headers,
-  };
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -73,23 +81,11 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   ]
 }
 
-function MainPage() {
+type Unpromise<T> = T extends Promise<infer U> ? U : T;
+
+function MainPage({ data }: { data: Unpromise<ReturnType<typeof loader>> }) {
   return <main className="bg-slate-100 min-h-screen">
-    <nav className="py-16 max-w-7xl mx-auto w-full grid grid-cols-4">
-      <span className="relative inline-flex max-md:justify-center mx-auto py-2 px-4 bg-primary text-primary-foreground w-max rounded-lg font-black">
-        is-a.bio
-      </span>
-
-      <div className="col-span-3 justify-self-end gap-x-2 flex flex-row items-center">
-        <Button variant="outline">
-          Login to your account
-        </Button>
-
-        <Button>
-          Start building your website
-        </Button>
-      </div>
-    </nav>
+    <MainNavigation user={data.user} />
 
     <div className="max-w-2xl mx-auto w-full text-center mt-32">
       <h1 className="text-5xl font-bold text-primary">
@@ -100,8 +96,10 @@ function MainPage() {
         Start building your portfolio today with is-a.bio. Showcase your work, your projects, and your skills to the world.
       </p>
 
-      <Button>
-        Get started for free
+      <Button asChild>
+        <Link to="/builder/new">
+          Get started for free
+        </Link>
       </Button>
     </div>
 
@@ -109,13 +107,13 @@ function MainPage() {
 }
 
 export default function Index() {
-  const { data } = useLoaderData<typeof loader>();
+  const data = useLoaderData<typeof loader>();
 
-  if (!data || !data.content) {
-    return <MainPage />
+  if (!data || !data.data) {
+    return <MainPage data={data} />
   }
   
-  const { settings, blocks } = data.content;
+  const { settings, blocks } = data.data.content;
   return <div className={cn("mx-auto w-full py-32 px-4", breakpoints[settings.size])}>
     {blocks.map((block, index) => <PreviewBlock key={index} block={block} />)}
   </div>

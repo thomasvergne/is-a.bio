@@ -3,29 +3,82 @@ import { Button } from "../ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Link, useNavigate } from "@remix-run/react";
+import { Link } from "@remix-run/react";
 import { useRef, useState } from "react";
 import { Block, Settings } from "../blocks";
+import { UserData } from "~/session.server";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+
+export function MainNavigation({ user }: { user: UserData | null }) {
+  return <nav className="py-16 max-w-7xl mx-auto w-full grid grid-cols-4">
+    <span className="relative max-md:inline-flex max-md:justify-center max-md:mx-auto py-2 px-4 bg-primary text-primary-foreground w-max rounded-lg font-black">
+      is-a.bio
+    </span>
+
+    <div className="col-span-3 justify-self-end gap-x-2 flex flex-row items-center">
+      {
+        user
+          ? <>
+            <Button asChild>
+              <Link to="/builder">
+                View your websites
+              </Link>
+            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  {user.username}
+
+                  <img src={user.avatarURL} alt={user.email} className="w-6 h-6 rounded-full" />
+                </Button>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent> 
+
+                <DropdownMenuItem asChild>
+                  <Link to="/logout">Logout</Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+          : <>
+            <Button variant="outline" asChild>
+              <Link to="/login">
+                Login to your account
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link to="/builder/new">
+                Start building your website
+              </Link>
+            </Button>
+          </>
+      }
+    </div>
+  </nav>
+}
 
 interface NavigationProps {
   setBlocks: (blocks: Block[]) => void;
   setSettings: (settings: Settings) => void;
   settings: Settings;
   action: 'edit' | 'preview';
+  name: string;
+  published: boolean;
 }
 
-export function Navigation({ setBlocks, setSettings, settings, action }: NavigationProps) {
+export function Navigation({ name, published, setSettings, settings, action }: NavigationProps) {
   const nameInputRef = useRef<HTMLInputElement>(null);
   const descriptionInputRef = useRef<HTMLInputElement>(null);
   const [size, setSize] = useState<Settings['size']>(settings.size);
-  const navigate = useNavigate();
 
   return <>
     <nav className="py-4 md:py-8 bg-white">
       <div className="max-w-7xl mx-auto w-full grid md:grid-cols-4 gap-4">
-        <span className="relative inline-flex max-md:justify-center mx-auto py-2 px-4 bg-primary text-primary-foreground w-max rounded-lg font-black">
+        <Link to="/" className="relative max-md:inline-flex max-md:justify-center max-md:mx-auto py-2 px-4 bg-primary text-primary-foreground w-max rounded-lg font-black">
           is-a.bio
-        </span>
+        </Link>
 
         <div className="md:col-span-3 justify-self-center md:justify-self-end self-center flex items-center md:justify-end flex-row gap-x-4">
           <Dialog>
@@ -73,10 +126,7 @@ export function Navigation({ setBlocks, setSettings, settings, action }: Navigat
 
               <DialogFooter className="w-full flex md:!justify-between gap-2">
                 <Button variant="destructive" onClick={() => {
-                  setBlocks([]);
-                  setSettings({ title: 'Untitled portfolio', size: 'small', description: '' });
 
-                  navigate('/builder/new');
                 }}>
                   Reset portfolio
                 </Button>
@@ -97,13 +147,15 @@ export function Navigation({ setBlocks, setSettings, settings, action }: Navigat
           </Dialog>
 
           <Button variant="outline" asChild>
-            <Link to={action === 'preview' ? '/builder/preview' : '/builder'}>
+            <Link to={action === 'preview' ? `/builder/preview/${name}` : `/builder/${name}`}>
               {action === 'preview' ? 'Preview the portfolio' : 'Edit the portfolio'}
             </Link>
           </Button>
 
-          <Button>
-            Publish
+          <Button asChild>
+            <Link to={published ? `/builder/unpublish/${name}` : `/builder/publish/${name}`}>
+              {published ? 'Unpublish the portfolio' : 'Publish the portfolio'}
+            </Link>
           </Button>
         </div>
       </div>
