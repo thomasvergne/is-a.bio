@@ -8,6 +8,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { TextEditor } from "./text-editor";
 import { Menu } from "./artefact-creator";
+import { ColorPicker } from "./ui/color-picker";
 
 export interface Settings {
   title: string;
@@ -33,6 +34,7 @@ interface BlockText {
   size: 'small' | 'medium' | 'large';
   content: string;
   id: string;
+  color: string;
 }
 
 interface BlockImage {
@@ -49,6 +51,7 @@ interface BlockGrid {
   size: number;
   children: Block[];
   id: string;
+  color: string;
 }
 
 interface BlockButton {
@@ -57,6 +60,7 @@ interface BlockButton {
   align: 'left' | 'center' | 'right';
   url: string;
   id: string;
+  color: string;
 }
 
 interface BlockVerticalSpace {
@@ -102,10 +106,15 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
   const imageAltRef = useRef<HTMLInputElement>(null);
   const imageWidthRef = useRef<HTMLInputElement>(null);
   const imageHeightRef = useRef<HTMLInputElement>(null);
+  const imageSpanRef = useRef<HTMLInputElement>(null);
+
   const gridSizeRef = useRef<HTMLInputElement>(null);
+  const gridColorRef = useRef<HTMLInputElement>(null);
+
   const buttonUrlRef = useRef<HTMLInputElement>(null);
   const buttonTextRef = useRef<HTMLInputElement>(null);
-  const spanRef = useRef<HTMLInputElement>(null);
+  const buttonSpanRef = useRef<HTMLInputElement>(null);
+  const buttonColorRef = useRef<HTMLInputElement>(null);
 
   function updateBlock(block: Block, index: number) {
     setBlocks(blocks.map((b, i) => i === index ? block : b));
@@ -174,7 +183,7 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
                           Column span (length that the button should span)
                         </Label>
 
-                        <Input ref={spanRef}  placeholder="Enter column span" type="number" defaultValue={colS} max={parent?.type === 'grid' ? parent.size : 1} min={1} />
+                        <Input ref={imageSpanRef}  placeholder="Enter column span" type="number" defaultValue={colS} max={parent?.type === 'grid' ? parent.size : 1} min={1} />
                       </>
                 }
               </CardContent>
@@ -191,6 +200,7 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
                       : parseInt(imageWidthRef.current.value, 10)
                     : 'auto';
                   const height = imageHeightRef.current ? parseInt(imageHeightRef.current.value, 10) : 'auto';
+                  const colS = imageSpanRef.current ? parseInt(imageSpanRef.current.value, 10) : 1;
 
                   updateBlock({
                     type: 'image',
@@ -199,6 +209,7 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
                     id: renderedBlock.id,
                     width,
                     height,
+                    columnSpan: colS,
                   }, index);
                 }}>
                   Update image
@@ -217,7 +228,7 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
     }
 
     case "text": {
-      const { size, content, id, columnSpan: colS } = renderedBlock;
+      const { size, content, id, columnSpan: colS, color } = renderedBlock;
 
       return <TextEditor 
         value={content} 
@@ -227,6 +238,7 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
             size,
             content: val,
             id,
+            color,
           }, index);
         }} 
         size={size}
@@ -236,8 +248,21 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
             content,
             size,
             id,
+            color,
           }, index)
         }}
+
+        onColorChange={(color) => {
+          console.log(color);
+          updateBlock({
+            type: 'text',
+            size,
+            content,
+            id,
+            color,
+          }, index);
+        }}
+
         deleteText={() => {
           setBlocks(blocks.filter((_, i) => i !== index));
         }}
@@ -246,17 +271,19 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
           'text-xl font-semibold': size === 'medium',
           'text-3xl font-bold': size === 'large',
         }, colS && columnSpan[colS])} 
+        style={{ color }}
+        color={color}
       />
     }
 
     case 'button': {
-      const { text, url, align, id, columnSpan: colS } = renderedBlock;
+      const { text, url, align, id, columnSpan: colS, color } = renderedBlock;
 
       return <>
         <ContextMenu>
           <ContextMenuTrigger asChild>
             <div className={cn("flex w-full", alignment[align], colS && columnSpan[colS])}>
-              <Button>
+              <Button style={{ backgroundColor: color, }}>
                 {text}
               </Button>
             </div>
@@ -294,6 +321,7 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
                     url,
                     align: val as 'left' | 'center' | 'right',
                     id,
+                    color,
                   }, index);
                 }}>
                   <SelectTrigger>
@@ -322,9 +350,15 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
                           Column span (length that the button should span)
                         </Label>
 
-                        <Input ref={spanRef}  placeholder="Enter column span" type="number" defaultValue={colS} max={parent?.type === 'grid' ? parent.size : 1} min={1} />
+                        <Input ref={buttonSpanRef}  placeholder="Enter column span" type="number" defaultValue={colS} max={parent?.type === 'grid' ? parent.size : 1} min={1} />
                       </>
                 }
+
+                <Label className="mb-2">
+                  Button color
+                </Label>
+
+                <ColorPicker ref={buttonColorRef} defaultValue={color} />
               </CardContent>
 
               <CardFooter className="flex justify-between p-2">
@@ -339,6 +373,7 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
 
                   const text = buttonTextRef.current.value;
                   const url = buttonUrlRef.current.value;
+                  const color = buttonColorRef.current ? buttonColorRef.current.value : 'hsl(var(--primary))';
 
                   updateBlock({
                     type: 'button',
@@ -346,7 +381,8 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
                     url,
                     align,
                     id,
-                    columnSpan: spanRef.current ? parseInt(spanRef.current.value, 10) : 1,
+                    columnSpan: buttonSpanRef.current ? parseInt(buttonSpanRef.current.value, 10) : 1,
+                    color,
                   }, index);
                 }}>
                   Update button 
@@ -359,7 +395,7 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
     }
 
     case "grid": {
-      const { size, children, id } = renderedBlock;
+      const { size, children, id, color } = renderedBlock;
       
       return <>
         <BlockContext.Provider value={{ blocks: children, setBlocks: (children) => {
@@ -368,11 +404,12 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
             size,
             children: children as Block[],
             id,
+            color
           }, index);
         }}}>
           <ContextMenu>
             <ContextMenuTrigger asChild>
-              <div className={cn("grid gap-4 w-full col-span-2 items-center group border border-dashed border-slate-200 p-2 rounded-lg min-h-20", size in gridSizes ? gridSizes[size] : "col-span-1")}>
+              <div className={cn("grid gap-4 w-full col-span-2 items-center group border border-dashed border-slate-200 p-2 rounded-lg min-h-20", size in gridSizes ? gridSizes[size] : "col-span-1")} style={{ backgroundColor: color }}>
                 {
                   children.length > 0 
                     ? children.map((child, i) => {
@@ -391,6 +428,7 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
                   size,
                   children: children as Block[],
                   id,
+                  color
                 }, index)
               }} />
               <ContextMenuSeparator />
@@ -407,6 +445,18 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
                   </Label>
 
                   <Input ref={gridSizeRef} placeholder="Enter grid size" type="number" defaultValue={size} />
+
+                  <Label>
+                    Grid color
+                  </Label>
+
+                  <Input ref={gridColorRef} type="color" />
+
+                  <Label>
+                    Grid width
+                  </Label>
+
+                  <Input type="number" />
                 </CardContent>
 
                 <CardFooter className="flex justify-between p-2">
@@ -422,6 +472,7 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
                       size,
                       children,
                       id,
+                      color,
                     }, index);
                   }}>  
                     Update grid

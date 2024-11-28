@@ -7,6 +7,7 @@ import { Block, BlockContext, insertAt } from "./blocks";
 import { Dispatch, SetStateAction, useContext, useRef, useState } from "react";
 import { ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger } from "./ui/context-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { ColorPicker } from "./ui/color-picker";
 
 interface ArtefactCreatorProps {
   blocks: Block[];
@@ -39,9 +40,11 @@ export function Menu({ position }: ArtefactCreatorProps) {
   const imageWidthRef = useRef<HTMLInputElement>(null);
 
   const gridSizeRef = useRef<HTMLInputElement>(null);
+  const gridColorRef = useRef<HTMLInputElement>(null);
 
   const buttonUrlRef = useRef<HTMLInputElement>(null);
   const buttonTextRef = useRef<HTMLInputElement>(null);
+  const buttonColorRef = useRef<HTMLInputElement>(null);
   const [alignment, setAlignment] = useState<'left' | 'center' | 'right'>('left');
 
   const [height, setHeight] = useState<number>(3);
@@ -72,6 +75,7 @@ export function Menu({ position }: ArtefactCreatorProps) {
 
   function addGrid() {
     const size = parseInt(gridSizeRef.current?.value || "0", 10);
+    const color = gridColorRef.current?.value ?? 'hsl(var(--primary))';
 
     if (!size) {
       return
@@ -82,6 +86,7 @@ export function Menu({ position }: ArtefactCreatorProps) {
       size,
       children: [],
       id: `grid-${position}`,
+      color,
     }));
   }
 
@@ -91,6 +96,7 @@ export function Menu({ position }: ArtefactCreatorProps) {
       content: "Hello, world!",
       size: 'small',
       id: `text-${position}`,
+      color: 'hsl(var(--primary))',
     }));
   }
 
@@ -98,6 +104,7 @@ export function Menu({ position }: ArtefactCreatorProps) {
     const url = buttonUrlRef.current?.value;
     const text = buttonTextRef.current?.value;
     const align = alignment;
+    const color = buttonColorRef.current?.value ?? 'hsl(var(--primary))';
 
     if (!url || !text || !align) {
       return
@@ -109,6 +116,7 @@ export function Menu({ position }: ArtefactCreatorProps) {
       url,
       align,
       id: `button-${position}`,
+      color,
     }));
   }
 
@@ -230,6 +238,12 @@ export function Menu({ position }: ArtefactCreatorProps) {
               </SelectContent>
             </Select>
 
+            <Label className="block mt-4 mb-2">
+              Button color
+            </Label>
+
+            <ColorPicker ref={buttonColorRef} />
+
             <Button onClick={addButton} className="mt-4">
               Add button
             </Button>
@@ -321,6 +335,12 @@ export function Menu({ position }: ArtefactCreatorProps) {
             </Label>
 
             <Input ref={gridSizeRef} placeholder="Enter grid size" type="number" max={3} min={1} defaultValue={2} />
+            
+            <Label className="block mt-4 mb-2">
+              Grid color
+            </Label>
+
+            <ColorPicker ref={gridColorRef} />
 
             <Button onClick={addGrid} className="mt-4">
               Add grid

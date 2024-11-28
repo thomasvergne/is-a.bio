@@ -21,6 +21,8 @@ export function SortableItem({ block, index, id }: { block: Block, index: number
       <RenderBlock block={block} index={index} />
     </div>
 
+    <div className="justify-self-end">
     <GripVertical className="h-6 w-6 ml-2 col-span-1" {...attributes} {...listeners} />
+    </div>
   </div>
 }

@@ -114,7 +114,7 @@ function MainPage({ data }: { data: Unpromise<ReturnType<typeof loader>> }) {
     </header>
     
     <div className="relative">
-      <img src="/screenshot.png" className="max-w-3xl mt-16 mx-auto border rounded-lg" alt="" />
+      <img src="/screenshot.png" className="max-w-3xl 2xl:max-w-7xl xl:max-w-5xl mt-16 mx-auto border rounded-lg" alt="" />
 
       <div className="absolute bottom-0 h-2/3 w-full bg-gradient-to-t from-slate-100 to-transparent">
 
