@@ -50,6 +50,16 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
+export async function loader({ request }: ActionFunctionArgs) {
+  const session = await fetchUser(request);
+
+  if (!session) {
+    return redirect('/login');
+  }
+
+  return {};
+}
+
 export default function BuilderNew() {
   const actionData = useActionData<typeof action>();
   
