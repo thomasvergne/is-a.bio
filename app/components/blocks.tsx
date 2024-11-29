@@ -31,7 +31,6 @@ export const gridSizes: Record<number, string> = {
 
 interface BlockText {
   type: "text";
-  size: 'small' | 'medium' | 'large';
   content: string;
   id: string;
   color: string;
@@ -228,35 +227,23 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
     }
 
     case "text": {
-      const { size, content, id, columnSpan: colS, color } = renderedBlock;
+      const { content, id, columnSpan: colS, color } = renderedBlock;
 
       return <TextEditor 
         value={content} 
         onValueChange={(val) => {
           updateBlock({
             type: 'text',
-            size,
             content: val,
             id,
             color,
           }, index);
-        }} 
-        size={size}
-        setSize={(size) => {
-          updateBlock({
-            type: 'text',
-            content,
-            size,
-            id,
-            color,
-          }, index)
         }}
 
         onColorChange={(color) => {
           console.log(color);
           updateBlock({
             type: 'text',
-            size,
             content,
             id,
             color,
@@ -266,11 +253,7 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
         deleteText={() => {
           setBlocks(blocks.filter((_, i) => i !== index));
         }}
-        className={cn({
-          'text-base': size === 'small',
-          'text-xl font-semibold': size === 'medium',
-          'text-3xl font-bold': size === 'large',
-        }, colS && columnSpan[colS])} 
+        className={cn(colS && columnSpan[colS])} 
         style={{ color }}
         color={color}
       />

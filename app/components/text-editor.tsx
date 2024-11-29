@@ -8,8 +8,6 @@ import { ColorPicker } from "./ui/color-picker";
 interface TextEditorProps extends React.HTMLAttributes<HTMLDivElement> {
   value: string;
   onValueChange: (value: string) => void;
-  setSize: (size: 'small' | 'medium' | 'large') => void;
-  size: 'small' | 'medium' | 'large';
   deleteText: () => void;
   onColorChange: (color: string) => void;
   color: string;

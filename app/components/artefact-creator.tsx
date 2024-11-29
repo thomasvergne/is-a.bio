@@ -94,9 +94,8 @@ export function Menu({ position }: ArtefactCreatorProps) {
     setBlocks(insertAt(blocks, position, {
       type: "text",
       content: "Hello, world!",
-      size: 'small',
       id: `text-${position}`,
-      color: 'hsl(var(--primary))',
+      color: '#222222',
     }));
   }
 

@@ -1,4 +1,4 @@
-import { SettingsIcon } from "lucide-react";
+import { Edit, Eye, MessageCircleWarning, SettingsIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Input } from "../ui/input";
@@ -9,6 +9,8 @@ import { Block, Settings } from "../blocks";
 import { UserData } from "~/session.server";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Label } from "../ui/label";
+import { SidebarTrigger } from "../ui/sidebar";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 
 export function MainNavigation({ user }: { user: UserData | null }) {
   return <nav className="py-16 lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto w-full grid grid-cols-4">
@@ -68,114 +70,142 @@ interface NavigationProps {
   name: string;
   published: boolean;
   onSave?: React.MouseEventHandler<HTMLButtonElement>;
+  onDelete: () => void;
+  actionData: { status: number; message: string } | undefined;
 }
 
-export function Navigation({ name, onSave, published, setSettings, settings, action }: NavigationProps) {
+export function Navigation({ actionData, onDelete, name, onSave, published, setSettings, settings, action }: NavigationProps) {
   const nameInputRef = useRef<HTMLInputElement>(null);
   const descriptionInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [size, setSize] = useState<Settings['size']>(settings.size);
 
   return <>
-    <nav className="py-4 md:py-8 bg-white">
-      <div className="lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto w-full grid md:grid-cols-4 gap-4">
-        <Link to="/" className="relative max-md:inline-flex max-md:justify-center max-md:mx-auto">
-          <img src="/logo.svg" className="w-24 h-auto" alt="" />
-        </Link>
+    <nav className="grid grid-cols-4 gap-8 py-8">
+      <div className="col-span-3 w-full">
+        <SidebarTrigger className="lg:hidden" />
+        {actionData?.message && (
+          <Alert variant="destructive">
+            <MessageCircleWarning className="w-5 h-5 mr-2" />
 
-        <div className="md:col-span-3 justify-self-center md:justify-self-end self-center flex items-center md:justify-end flex-row gap-x-4">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <SettingsIcon />
+            <AlertTitle>
+              An error occured while saving the portfolio
+            </AlertTitle>
+            <AlertDescription>
+              {actionData.message}
+            </AlertDescription>
+          </Alert>
+        )}
+      </div>
+      
+      <div className="flex items-center justify-end gap-2">
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <SettingsIcon />
+            </Button>
+          </DialogTrigger>
+
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                Portfolio settings
+              </DialogTitle>
+
+              <DialogDescription>
+                Change the settings of your portfolio, such as the name, description, width, and more.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="py-4">
+              <Label className="block">
+                General settings
+              </Label>
+
+              <Input ref={nameInputRef} defaultValue={settings.title} type="text" placeholder="Enter the name of your portfolio" className="mt-2" />
+              <Input ref={descriptionInputRef} defaultValue={settings.description} type="text" placeholder="Enter the description of your portfolio" className="mt-2 mb-2" />
+
+              <Select onValueChange={(value) => setSize(value as Settings['size'])} defaultValue={settings.size}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Set the width of your portfolio" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value="small">
+                    Small (default: 768px)
+                  </SelectItem>
+
+                  <SelectItem value="medium">
+                    Medium (1024px)
+                  </SelectItem>
+
+                  <SelectItem value="large">
+                    Large (1280px)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Label className="mt-4 block">
+                Your portfolio icon
+              </Label>
+
+              <Input ref={fileInputRef} type="file" id="portfolio-icon" name="portfolio-icon" className="mt-2" />
+            </div>
+
+            <DialogFooter className="w-full flex md:!justify-between gap-2">
+              <Button variant="destructive" onClick={onDelete}>
+                Delete portfolio
               </Button>
-            </DialogTrigger>
+              <div className="flex gap-x-2 max-md:w-full">
+                <DialogClose asChild className="max-md:w-full">
+                  <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button className="max-md:w-full" onClick={(e) => {
+                  setSettings({
+                    title: nameInputRef.current?.value ?? settings.title,
+                    description: descriptionInputRef.current?.value ?? settings.description,
+                    size,
+                    favicon: fileInputRef.current?.files?.[0] ?? settings.favicon,
+                  });
 
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  Portfolio settings
-                </DialogTitle>
-
-                <DialogDescription>
-                  Change the settings of your portfolio, such as the name, description, width, and more.
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="py-4">
-                <Input ref={nameInputRef} defaultValue={settings.title} type="text" placeholder="Enter the name of your portfolio" className="mt-2" />
-                <Input ref={descriptionInputRef} defaultValue={settings.description} type="text" placeholder="Enter the description of your portfolio" className="mt-2 mb-2" />
-
-                <Select onValueChange={(value) => setSize(value as Settings['size'])} defaultValue={settings.size}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Set the width of your portfolio" />
-                  </SelectTrigger>
-
-                  <SelectContent>
-                    <SelectItem value="small">
-                      Small (default: 768px)
-                    </SelectItem>
-
-                    <SelectItem value="medium">
-                      Medium (1024px)
-                    </SelectItem>
-
-                    <SelectItem value="large">
-                      Large (1280px)
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Label className="mt-2 block">
-                  Your portfolio icon
-                </Label>
-
-                <Input ref={fileInputRef} type="file" id="portfolio-icon" name="portfolio-icon" className="mt-2" />
+                  return onSave?.call(null, e);
+                }}>Save changes</Button>
               </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        <Button variant="ghost" asChild>
+          <Link to={action === 'preview' ? `/builder/${name}/preview` : `/builder/${name}`}>
+            {
+              action === 'preview'
+                ? <Eye />
+                : <Edit />
+            }
+          </Link>
+        </Button>
 
-              <DialogFooter className="w-full flex md:!justify-between gap-2">
-                <Button variant="destructive" onClick={() => {
+        <Button 
+          variant="outline"
+          onClick={(e) => {
+            setSettings({
+              title: nameInputRef.current?.value ?? settings.title,
+              description: descriptionInputRef.current?.value ?? settings.description,
+              size,
+              favicon: fileInputRef.current?.files?.[0] ?? settings.favicon,
+            });
 
-                }}>
-                  Reset portfolio
-                </Button>
-                <div className="flex gap-x-2 max-md:w-full">
-                  <DialogClose asChild className="max-md:w-full">
-                    <Button variant="outline">Cancel</Button>
-                  </DialogClose>
-                  <Button className="max-md:w-full" onClick={(e) => {
-                    setSettings({
-                      title: nameInputRef.current?.value ?? settings.title,
-                      description: descriptionInputRef.current?.value ?? settings.description,
-                      size,
-                      favicon: fileInputRef.current?.files?.[0] ?? settings.favicon,
-                    });
+            return onSave?.call(null, e);
+          }}
+        >
+          Save content
+        </Button>
 
-                    return onSave?.call(null, e);
-                  }}>Save changes</Button>
-                </div>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          <Button variant="outline" onClick={onSave}>
-            Save changes
-          </Button>
-
-          <Button variant="outline" asChild>
-            <Link to={action === 'preview' ? `/builder/preview/${name}` : `/builder/${name}`}>
-              {action === 'preview' ? 'Preview the portfolio' : 'Edit the portfolio'}
-            </Link>
-          </Button>
-
-          <Button asChild>
-            <Link to={published ? `/builder/unpublish/${name}` : `/builder/publish/${name}`}>
-              {published ? 'Unpublish the portfolio' : 'Publish the portfolio'}
-            </Link>
-          </Button>
-        </div>
+        <Button asChild>
+          <Link to={published ? `/builder/${name}/unpublish` : `/builder/${name}/publish`}>
+            {published ? 'Unpublish the portfolio' : 'Publish the portfolio'}
+          </Link>
+        </Button>
       </div>
     </nav>
-    <hr />
   </>
 }

@@ -24,9 +24,9 @@ export function PreviewBlock({ block }: { block: Block }) {
     }
 
     case 'text': {
-      const { content } = block;
+      const { content, color, columnSpan: colS } = block;
 
-      return <div className="prose my-2 max-w-full" dangerouslySetInnerHTML={{ __html: marked(content) }} />;
+      return <div className={cn("prose my-2 max-w-full", colS && columnSpan[colS])} dangerouslySetInnerHTML={{ __html: marked(content) }} style={{ color }} />;
     }
 
     case 'grid': {
