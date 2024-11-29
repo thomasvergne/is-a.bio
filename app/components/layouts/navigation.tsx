@@ -5,12 +5,12 @@ import { Input } from "../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Link } from "@remix-run/react";
 import { useRef, useState } from "react";
-import { Block, Settings } from "../blocks";
 import { UserData } from "~/session.server";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Label } from "../ui/label";
 import { SidebarTrigger } from "../ui/sidebar";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Block, Settings } from "../types";
 
 export function MainNavigation({ user }: { user: UserData | null }) {
   return <nav className="py-16 lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto w-full grid grid-cols-4">
@@ -81,11 +81,11 @@ export function Navigation({ actionData, onDelete, name, onSave, published, setS
   const [size, setSize] = useState<Settings['size']>(settings.size);
 
   return <>
-    <nav className="grid grid-cols-4 gap-8 py-8">
-      <div className="col-span-3 w-full">
+    <nav className="grid grid-cols-2 gap-8 py-8">
+      <div className="col-span-1 w-full">
         <SidebarTrigger className="lg:hidden" />
         {actionData?.message && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="block">
             <MessageCircleWarning className="w-5 h-5 mr-2" />
 
             <AlertTitle>

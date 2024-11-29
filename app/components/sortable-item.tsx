@@ -1,7 +1,8 @@
 import { useSortable } from "@dnd-kit/sortable";
-import { Block, RenderBlock } from "./blocks";
+import { RenderBlock } from "./blocks";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
+import { Block } from "./types";
 
 export function SortableItem({ block, index, id }: { block: Block, index: number, id: string }) {
   const {

@@ -1,9 +1,9 @@
 import type { MetaFunction } from "@remix-run/node";
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import { breakpoints } from "~/components/blocks";
 import { MainNavigation } from "~/components/layouts/navigation";
 import { PreviewBlock } from "~/components/render";
+import { breakpoints } from "~/components/types";
 import { Button } from "~/components/ui/button";
 import { database, WebsiteData } from "~/db.server";
 import { cn } from "~/lib/utils";

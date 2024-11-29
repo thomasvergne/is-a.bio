@@ -1,5 +1,5 @@
 import { Menu } from "~/components/artefact-creator";
-import { Block, BlockContext, breakpoints, Settings } from "~/components/blocks";
+import { BlockContext } from "~/components/blocks";
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "~/components/ui/context-menu";
 import {
   closestCenter,
@@ -18,8 +18,9 @@ import { database, WebsiteData } from "~/db.server";
 import { fetchUser, getSession } from "~/session.server";
 import { SortableItem } from "~/components/sortable-item";
 import { ClientResponseError } from "pocketbase";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { cn } from "~/lib/utils";
+import { Block, breakpoints, Settings } from "~/components/types";
 
 export async function action({ request, params }: ActionFunctionArgs) {
   const formData = await request.formData();
@@ -113,7 +114,8 @@ export default function BuilderIndex() {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
-  const [blocks, setBlocks] = useState<Block[]>(loaderData.data.content.blocks);
+  const { blocks, setBlocks } = useContext(BlockContext);
+  
   const [settings, setSettings] = useState<Settings>(loaderData.data.content.settings as Settings);
   const submit = useSubmit();
   const navigate = useNavigate();
@@ -166,32 +168,30 @@ export default function BuilderIndex() {
     />
 
     <div className={cn("mx-auto", breakpoints[settings.size])}>
-      <BlockContext.Provider value={{ blocks, setBlocks }}>
-        <DndContext
-          id="draggable-table-01"
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
+      <DndContext
+        id="draggable-table-01"
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={blocks.map((block) => block.id)}
+          strategy={verticalListSortingStrategy}
         >
-          <SortableContext
-            items={blocks.map((block) => block.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            {blocks.map((block, index) => <SortableItem block={block} index={index} id={block.id} key={block.id} />)}
-          </SortableContext>
-        </DndContext>
-        <ContextMenu>
-          <ContextMenuTrigger asChild>
-            <div className="h-12 w-full border border-slate-400 rounded-md border-dashed grid place-items-center text-sm text-muted-foreground my-1 mt-4">
-              Right click to show context menu
-            </div>
-          </ContextMenuTrigger>
+          {blocks.map((block, index) => <SortableItem block={block} index={index} id={block.id} key={block.id} />)}
+        </SortableContext>
+      </DndContext>
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <div className="h-12 w-full border border-slate-400 rounded-md border-dashed grid place-items-center text-sm text-muted-foreground my-1 mt-4">
+            Right click to show context menu
+          </div>
+        </ContextMenuTrigger>
 
-          <ContextMenuContent className="w-64">
-            <Menu blocks={blocks} setBlocks={setBlocks} position={blocks.length} />
-          </ContextMenuContent>
-        </ContextMenu>
-      </BlockContext.Provider>
+        <ContextMenuContent className="w-64">
+          <Menu blocks={blocks} setBlocks={setBlocks} position={blocks.length} />
+        </ContextMenuContent>
+      </ContextMenu>
     </div>
   </div>
 }

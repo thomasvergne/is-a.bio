@@ -3,11 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
-import { Block, BlockContext, insertAt } from "./blocks";
+import { BlockContext, insertAt } from "./blocks";
 import { Dispatch, SetStateAction, useContext, useRef, useState } from "react";
 import { ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger } from "./ui/context-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { ColorPicker } from "./ui/color-picker";
+import { Block } from "./types";
 
 interface ArtefactCreatorProps {
   blocks: Block[];
@@ -75,7 +76,7 @@ export function Menu({ position }: ArtefactCreatorProps) {
 
   function addGrid() {
     const size = parseInt(gridSizeRef.current?.value || "0", 10);
-    const color = gridColorRef.current?.value ?? 'hsl(var(--primary))';
+    const color = gridColorRef.current?.value ?? 'transparent';
 
     if (!size) {
       return
@@ -339,7 +340,7 @@ export function Menu({ position }: ArtefactCreatorProps) {
               Grid color
             </Label>
 
-            <ColorPicker ref={gridColorRef} />
+            <ColorPicker ref={gridColorRef} defaultValue="transparent" />
 
             <Button onClick={addGrid} className="mt-4">
               Add grid

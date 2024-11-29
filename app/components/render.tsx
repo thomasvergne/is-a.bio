@@ -1,7 +1,7 @@
 import { marked } from "marked";
-import { alignment, Block, columnSpan, gridSizes, sizeTable } from "./blocks";
 import { cn } from "~/lib/utils";
 import { Button } from "./ui/button";
+import { alignment, Block, columnSpan, gridSizes, sizeTable } from "./types";
 
 export function PreviewBlock({ block }: { block: Block }) {
   switch (block.type) {

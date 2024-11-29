@@ -1,10 +1,11 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { redirect, useActionData, useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
 import { ClientResponseError } from "pocketbase";
-import { useState } from "react";
-import { Block, breakpoints, Settings } from "~/components/blocks";
+import { useContext, useState } from "react";
+import { BlockContext } from "~/components/blocks";
 import { Navigation } from "~/components/layouts/navigation";
 import { PreviewBlock } from "~/components/render";
+import { Block, breakpoints, Settings } from "~/components/types";
 import { database, WebsiteData } from "~/db.server";
 import { cn } from "~/lib/utils";
 import { fetchUser, getSession } from "~/session.server";
@@ -84,8 +85,8 @@ export default function BuilderPreview() {
   const actionData = useActionData<typeof action>();
   const submit = useSubmit();
   const navigate = useNavigate();
-
-  const [blocks, setBlocks] = useState<Block[]>(loaderData.data.content.blocks);
+  
+  const { blocks, setBlocks } = useContext(BlockContext);
   const [settings, setSettings] = useState<Settings>(loaderData.data.content.settings as Settings);
 
   return <div className="max-w-5xl mx-auto w-full">
