@@ -1,9 +1,31 @@
-import { ActionFunctionArgs } from "@remix-run/node";
+import { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
 import { Form } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { database } from "~/db.server";
 import { getSession, sessionStorage } from "~/session.server";
+
+export const meta: MetaFunction = () => {
+  const description = "is-a.bio is the best app to create your portfolio. Start building your portfolio today with is-a.bio.";
+
+  return [
+    { title: 'Login | is-a.bio' },
+    {
+      property: "og:title",
+      content: "Login | is-a.bio",
+    },
+    {
+      name: "description",
+      content: description,
+    },
+    {
+      property: "og:description",
+      content: description,
+    },
+
+    { tagName: "link", rel: 'icon', href: '/favicon.png', type: 'image/png' }
+  ]
+}
 
 export async function action({ request }: ActionFunctionArgs) {
   const authMethods = await database.collection("users").listAuthMethods();

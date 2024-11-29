@@ -1,4 +1,4 @@
-import { ActionFunctionArgs } from "@remix-run/node";
+import { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
 import { Form, redirect, useActionData } from "@remix-run/react";
 import { MessageCircleWarning } from "lucide-react";
 import { ClientResponseError } from "pocketbase";
@@ -10,6 +10,28 @@ import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
 import { database, WebsiteData } from "~/db.server";
 import { fetchUser } from "~/session.server";
+
+export const meta: MetaFunction = () => {
+  const description = "is-a.bio is the best app to create your portfolio. Start building your portfolio today with is-a.bio.";
+
+  return [
+    { title: 'Builder | is-a.bio' },
+    {
+      property: "og:title",
+      content: "Builder | is-a.bio",
+    },
+    {
+      name: "description",
+      content: description,
+    },
+    {
+      property: "og:description",
+      content: description,
+    },
+
+    { tagName: "link", rel: 'icon', href: '/favicon.png', type: 'image/png' }
+  ]
+}
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();

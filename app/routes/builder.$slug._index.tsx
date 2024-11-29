@@ -11,17 +11,15 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { cn } from "~/lib/utils";
 import { Navigation } from "~/components/layouts/navigation";
-import { redirect, useActionData, useLoaderData, useSubmit } from "@remix-run/react";
+import { redirect, useActionData, useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { database, WebsiteData } from "~/db.server";
 import { fetchUser, getSession } from "~/session.server";
 import { SortableItem } from "~/components/sortable-item";
 import { ClientResponseError } from "pocketbase";
-import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { MessageCircleWarning } from "lucide-react";
 import { useState } from "react";
+import { cn } from "~/lib/utils";
 
 export async function action({ request, params }: ActionFunctionArgs) {
   const formData = await request.formData();
@@ -118,12 +116,12 @@ export default function BuilderIndex() {
   const [blocks, setBlocks] = useState<Block[]>(loaderData.data.content.blocks);
   const [settings, setSettings] = useState<Settings>(loaderData.data.content.settings as Settings);
   const submit = useSubmit();
+  const navigate = useNavigate();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor)
   );
-
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -142,43 +140,33 @@ export default function BuilderIndex() {
     }
   }
 
-  return <div className="bg-slate-100 min-h-screen">
-    <BlockContext.Provider value={{ blocks, setBlocks }}>
-      <Navigation 
-        published={loaderData.data.published} 
-        name={loaderData.data.id}
-        setBlocks={setBlocks} setSettings={setSettings} 
-        settings={settings} action="preview" 
-        onSave={() => {
-          const formData = new FormData();
-          formData.append('blocks', JSON.stringify(blocks));
-          formData.append('settings', JSON.stringify(settings));
+  return <div className={"mx-auto w-full"}>
+    <Navigation
+      published={loaderData.data.published} 
+      name={loaderData.data.id}
+      setBlocks={setBlocks} setSettings={setSettings} 
+      settings={settings} action="preview" 
+      onSave={() => {
+        const formData = new FormData();
+        formData.append('blocks', JSON.stringify(blocks));
+        formData.append('settings', JSON.stringify(settings));
 
-          if (settings.favicon && settings.favicon instanceof File) {
-            formData.append('favicon', settings.favicon);
-          }
-          
-          submit(formData, {
-            method: 'post',
-            encType: 'multipart/form-data',
-          });
-        }}
-      />
-
-      <main className={cn("mx-auto w-full py-32 px-4", breakpoints[settings.size])}>
-        {actionData?.message && (
-          <Alert variant="destructive" className="mb-8">
-            <MessageCircleWarning className="w-5 h-5 mr-2" />
-
-            <AlertTitle>
-              An error occured while saving the portfolio
-            </AlertTitle>
-            <AlertDescription>
-              {actionData.message}
-            </AlertDescription>
-          </Alert>
-        )}
+        if (settings.favicon && settings.favicon instanceof File) {
+          formData.append('favicon', settings.favicon);
+        }
         
+        submit(formData, {
+          method: 'post',
+          encType: 'multipart/form-data',
+        });
+      }}
+
+      onDelete={() => navigate(`/builder/${loaderData.data.id}/delete`)}
+      actionData={actionData}
+    />
+
+    <div className={cn("mx-auto", breakpoints[settings.size])}>
+      <BlockContext.Provider value={{ blocks, setBlocks }}>
         <DndContext
           id="draggable-table-01"
           sensors={sensors}
@@ -203,7 +191,7 @@ export default function BuilderIndex() {
             <Menu blocks={blocks} setBlocks={setBlocks} position={blocks.length} />
           </ContextMenuContent>
         </ContextMenu>
-      </main>
-    </BlockContext.Provider>
+      </BlockContext.Provider>
+    </div>
   </div>
 }

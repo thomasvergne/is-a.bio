@@ -9,7 +9,7 @@ export interface WebsiteData {
   created: string;
   updated: string;
   content: {
-    settings: Settings;
+    settings: Exclude<Settings, "favicon">;
     blocks: Block[];
   };
   collectionName: string;
