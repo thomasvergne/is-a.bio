@@ -103,7 +103,7 @@ export function Menu({ position }: ArtefactCreatorProps) {
   function addButton() {
     const url = buttonUrlRef.current?.value;
     const text = buttonTextRef.current?.value;
-    const align = alignment;
+    const align = alignment ?? 'left';
     const color = buttonColorRef.current?.value ?? 'hsl(var(--primary))';
 
     if (!url || !text || !align) {
@@ -218,7 +218,7 @@ export function Menu({ position }: ArtefactCreatorProps) {
               Button alignment
             </Label>
 
-            <Select onValueChange={(val) => setAlignment(val as 'left' | 'center' | 'right')}>
+            <Select defaultValue="left" onValueChange={(val) => setAlignment(val as 'left' | 'center' | 'right')}>
               <SelectTrigger>
                 <SelectValue placeholder="Select button alignment" />
               </SelectTrigger>

@@ -369,7 +369,7 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
                     Grid color
                   </Label>
 
-                  <Input ref={gridColorRef} type="color" />
+                  <ColorPicker ref={gridColorRef} />
 
                   <Label>
                     Grid width
@@ -383,6 +383,7 @@ export function RenderBlock({ index, isGrid = false, parent }: RenderBlockProps)
                     if (!gridSizeRef.current) return;
 
                     const size = parseInt(gridSizeRef.current.value, 10);
+                    const color = gridColorRef.current ? gridColorRef.current.value : 'transparent';
 
                     if (!size) return;
 

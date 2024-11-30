@@ -18,7 +18,7 @@ export function PreviewBlock({ block }: { block: Block }) {
             ? 'auto' 
             : width === 'full'
               ? '100%'
-              : `${width}px` 
+              : `${width}px`
         }}
       />;
     }
@@ -30,17 +30,17 @@ export function PreviewBlock({ block }: { block: Block }) {
     }
 
     case 'grid': {
-      const { children, size } = block;
-      return <div className={cn("grid gap-4 my-4", size in gridSizes ? gridSizes[size] : 'col-span-1')}>
+      const { children, size, color } = block;
+      return <div className={cn("grid gap-4 my-4", size in gridSizes ? gridSizes[size] : 'col-span-1')} style={{ backgroundColor: color }}>
         {children.map((child, index) => <PreviewBlock key={index} block={child} />)}
       </div>;
     }
 
     case 'button': {
-      const { text, url, align, columnSpan: colS } = block;
+      const { text, url, align, columnSpan: colS, color } = block;
 
       return <div className={cn("w-full flex items-center", alignment[align], colS && columnSpan[colS])}>
-        <Button asChild>
+        <Button asChild style={{ backgroundColor: color }}>
           <a href={url}>
             {text}
           </a>
