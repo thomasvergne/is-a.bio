@@ -52,7 +52,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   return redirect("/", {
     headers: { "Set-Cookie": await sessionStorage.commitSession(session, {
-      expires: new Date(Date.now() + 1000 * 60 * 60 * 24), // 1 day
+      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 1 day
     }) },
   });
 };

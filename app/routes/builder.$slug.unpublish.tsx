@@ -24,6 +24,6 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
 
   } catch (e) {
-    return redirect("/builder/new");
+    return redirect(`/auth/refresh?redirect=/builder/${slug}/unpublish`);
   }
 }

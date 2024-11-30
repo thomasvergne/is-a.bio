@@ -19,6 +19,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   try {
     await pb.collection('websites').delete(slug);
   } catch(e) {
-    return redirect("/builder/new");
+    return redirect(`/auth/refresh?redirect=/builder/${slug}/delete`);
   }
 }

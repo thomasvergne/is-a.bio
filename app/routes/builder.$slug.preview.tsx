@@ -1,6 +1,5 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { redirect, useActionData, useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
-import { ClientResponseError } from "pocketbase";
 import { useContext, useState } from "react";
 import { BlockContext } from "~/components/blocks";
 import { Navigation } from "~/components/layouts/navigation";
@@ -44,12 +43,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     return redirect(`/builder/${slug}/preview`);
   } catch(e) {
-    const error = e as ClientResponseError;
-
-    return {
-      status: 500,
-      message: error.message,
-    }
+    return redirect(`/auth/refresh?redirect=/builder/${slug}/preview`);
   }
 }
 

@@ -35,7 +35,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     };
   
   } catch(e) {
-    return redirect('/builder/new');
+    return redirect(`/auth/refresh`);
   }
 }
 

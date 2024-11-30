@@ -1,9 +1,6 @@
 import { Label } from "@radix-ui/react-label";
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { Form, Link, redirect, useActionData, useLoaderData } from "@remix-run/react";
-import { MessageCircleWarning } from "lucide-react";
-import { ClientResponseError } from "pocketbase";
-import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Form, Link, redirect, useLoaderData } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { database, WebsiteData } from "~/db.server";
@@ -36,11 +33,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     return redirect(`/builder/${slug}`);
   } catch(e) {
-    const error = e as ClientResponseError;
-    return {
-      status: 500,
-      message: error.message,
-    }
+    return redirect(`/auth/refresh?redirect=/builder/${slug}/publish`);
   }
 }
 
@@ -74,7 +67,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 export default function BuilderPublish() {
   const loaderData = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
 
   return <main className="min-h-screen bg-slate-100 grid place-items-center">
     <Form method='POST' className="max-w-3xl mx-auto">
@@ -90,18 +82,6 @@ export default function BuilderPublish() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {actionData?.message && (
-            <Alert variant="destructive">
-              <MessageCircleWarning className="w-5 h-5 mr-2" />
-
-              <AlertTitle>
-                An error occured while publishing the portfolio
-              </AlertTitle>
-              <AlertDescription>
-                {actionData.message}
-              </AlertDescription>
-            </Alert>
-          )}
           <div>
             <Label>
               The portfolio name

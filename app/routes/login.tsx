@@ -46,7 +46,7 @@ export async function action({ request }: ActionFunctionArgs) {
     headers: {
       Location: authProviderRedirect,
       "Set-Cookie": await sessionStorage.commitSession(session, {
-        expires: new Date(Date.now() + 1000 * 60 * 60 * 24), // 1 week
+        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 1 week
       }),
     },
     status: 302,

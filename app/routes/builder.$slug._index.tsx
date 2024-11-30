@@ -17,7 +17,6 @@ import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { database, WebsiteData } from "~/db.server";
 import { fetchUser, getSession } from "~/session.server";
 import { SortableItem } from "~/components/sortable-item";
-import { ClientResponseError } from "pocketbase";
 import { useContext, useState } from "react";
 import { cn } from "~/lib/utils";
 import { Block, breakpoints, Settings } from "~/components/types";
@@ -60,12 +59,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
  
     return redirect(`/builder/${slug}`);
   } catch(e) {
-    const error = e as ClientResponseError;
-
-    return {
-      status: 500,
-      message: error.message,
-    }
+    return redirect(`/auth/refresh?redirect=/builder/${slug}`);
   }
 }
 
